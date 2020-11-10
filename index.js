@@ -21,7 +21,7 @@ class Card {
 		const type = cards[name];
 		this.nameEl.innerText = name;
 		for (let i = 0; i < 25; i++) {
-			this.gridEl.children[i].setAttribute("possible", type.moves[this.flipped ? 24 - i : i]);
+			this.gridEl.children[i].setAttribute("possible", type.moves[this.flipped ? i : 24 - i]);
 		}
 	}
 }

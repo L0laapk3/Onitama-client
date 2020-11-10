@@ -24,7 +24,8 @@ game-container {
 	margin: 0 auto;
 	display: flex;
     justify-content: space-between;
-    align-items: center;
+	align-items: center;
+	user-select: none;
 }
 board-container {
 	max-height: calc(1.54 * var(--board-size));
@@ -119,6 +120,7 @@ game-card-grid {
 	border-right: 0;
 	border-bottom: 0;
 	flex-wrap: wrap;
+	flex-direction: row-reverse;
 }
 game-card-grid-cell {
 	height: 20%;
