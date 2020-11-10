@@ -38,7 +38,6 @@ function setBoard(data) {
 			// move piece
 			const fromCell = newPieces[type][i];
 			const toCell = removedPieces[type][i];
-			toCell.el.append(fromCell.piece.el);
 			toCell.piece = fromCell.piece;
 		}
 		for (; i < newPieces[type].length; i++) {
@@ -54,12 +53,16 @@ function setBoard(data) {
 				cell.piece.el.setAttribute("red", "");
 			if (type % 2 == 1)
 				cell.piece.el.setAttribute("master", "");
-			cell.el.append(cell.piece.el);
+			cell.piece.el.style.setProperty("--x", cell.x);
+			cell.piece.el.style.setProperty("--y", cell.y);
+			board.el.append(cell.piece.el);
+			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => cell.piece.el.style.setProperty("opacity", 1)));
 		}
 		for (; i < removedPieces[type].length; i++) {
 			// delete piece
 			const cell = removedPieces[type][i];
-			cell.piece.el.remove();
+			cell.piece.el.style.setProperty("opacity", 0);
+			window.requestAnimationFrame(_ => setTimeout(_ => cell.piece.el.remove(), 500));
 			cell.piece = undefined;
 		}
 	}

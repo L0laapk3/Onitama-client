@@ -25,6 +25,7 @@ main-container {
 game-board {
 	display: flex;
 	margin: auto;
+	position: relative;
 	width: var(--board-size);
 	height: var(--board-size);
 	flex-direction: column;
@@ -45,15 +46,19 @@ game-board-row:nth-child(odd) > game-board-cell:nth-child(even) {
 	background-color: var(--light-square);
 }
 game-piece {
-    width: 60%;
-    height: 60%;
+	left: calc(4% + 20% * var(--x));
+	top: calc(4% + 20% * var(--y));
+    width: 12%;
+    height: 12%;
     display: flex;
-    margin: auto;
     border-radius: 50%;
-	position: relative;
+	position: absolute;
+	opacity: 0;
+	transition: opacity ease-in-out .5s, left ease-out .5s, top ease-out .5s;
 }
 game-piece[blue] {
-	background-color: white;
+	--white: #fff;
+	background-color: var(--white);
 }
 game-piece[red] {
 	background-color: black;
