@@ -121,6 +121,7 @@ game-card-grid {
 	border-bottom: 0;
 	flex-wrap: wrap;
 	flex-direction: row-reverse;
+	background-color: white;
 }
 game-card-grid-cell {
 	height: 20%;
