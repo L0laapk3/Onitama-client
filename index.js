@@ -1,5 +1,8 @@
 'use strict';
 
+// warning: this code isnt meant to be maintainable
+// quick and dirty
+
 const ws = new WebSocket("wss://litama.herokuapp.com");
 
 const cards = {};

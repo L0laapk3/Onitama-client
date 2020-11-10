@@ -186,5 +186,6 @@ game-card-name {
     flex: 1 0 0;
     text-align: center;
 	line-height: calc(.17 * var(--board-size));
-    font-weight: 700;
+	font-weight: 700;
+	font-size: calc(.042 * var(--board-size));
 }
