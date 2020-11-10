@@ -1,0 +1,85 @@
+* {
+	margin: 0;
+}
+
+body {
+	--board-size: 55vw;
+	--light-square: #E3C7A3;
+	--dark-square: #BC926D;
+    height: 100%;
+    width: 100%;
+	position: fixed;
+	display: block;
+}
+@media (min-aspect-ratio: 1/1) {
+	body {
+		--board-size: 55vh;
+	}
+}
+
+main-container {
+	height: 100%;
+	width: 100%;
+	display: flex;
+}
+game-board {
+	display: flex;
+	margin: auto;
+	width: var(--board-size);
+	height: var(--board-size);
+	flex-direction: column;
+	background-color: var(--dark-square);
+}
+game-board-row {
+	display: flex;
+	height: 20%;
+	width: 100%;
+}
+game-board-cell {
+	display: flex;
+	height: 100%;
+	width: 20%;
+}
+game-board-row:nth-child(even) > game-board-cell:nth-child(odd),
+game-board-row:nth-child(odd) > game-board-cell:nth-child(even) {
+	background-color: var(--light-square);
+}
+game-piece {
+    width: 60%;
+    height: 60%;
+    display: flex;
+    margin: auto;
+    border-radius: 50%;
+	position: relative;
+}
+game-piece[blue] {
+	background-color: white;
+}
+game-piece[red] {
+	background-color: black;
+}
+game-piece::before {
+	content: "";
+	display: flex;
+	position: absolute;
+	width: 80%;
+	height: 80%;
+	border-radius: 50%;
+	margin: 10%;
+}
+game-piece[blue]::before {
+	background-color: deepskyblue;
+}
+game-piece[red]::before {
+	background-color: red;
+}
+game-piece[master]::after {
+	content: "";
+	display: flex;
+	position: absolute;
+	width: 34%;
+	height: 34%;
+	background-color: inherit;
+	margin: 33%;
+	transform: rotate(45deg);
+}
