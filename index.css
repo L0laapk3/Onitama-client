@@ -57,6 +57,7 @@ game-board-row:nth-child(even) > game-board-cell:nth-child(odd),
 game-board-row:nth-child(odd) > game-board-cell:nth-child(even) {
 	background-color: var(--light-square);
 }
+game-ghost-piece,
 game-piece {
 	left: calc(4% + 20% * var(--x));
 	top: calc(4% + 20% * var(--y));
@@ -65,8 +66,32 @@ game-piece {
     display: flex;
     border-radius: 50%;
 	position: absolute;
+	cursor: pointer;
+}
+game-piece {
+	pointer-events: none;
 	opacity: 0;
-	transition: opacity ease-in-out .5s, left ease-out .5s, top ease-out .5s;
+	transition: opacity ease-in-out .25s, left ease-out .25s, top ease-out .25s;
+}
+game-board[flipped] game-ghost-piece,
+game-board[flipped] game-piece {
+	left: calc(4% + 20% * (4 - var(--x)));
+	top: calc(4% + 20% * (4 - var(--y)));
+}
+game-board[playable="blue"][turn="blue"] game-piece[blue],
+game-board[playable="red"][turn="red"] game-piece[red] {
+	pointer-events: all;
+}
+game-ghost-piece {
+	background-color: #C2C93C99;
+}
+game-ghost-piece::before {
+	content: "";
+    border: solid #C2C93C calc(.012 * var(--board-size));
+	position: absolute;
+	width: 80%;
+	height: 80%;
+	border-radius: 50%;
 }
 game-piece[blue] {
 	background-color: white;
@@ -89,6 +114,7 @@ game-piece[blue]::before {
 game-piece[red]::before {
 	background-color: red;
 }
+game-ghost-piece[master]::after,
 game-piece[master]::after {
 	content: "";
 	display: flex;
@@ -98,6 +124,9 @@ game-piece[master]::after {
 	background-color: inherit;
 	margin: 33%;
 	transform: rotate(45deg);
+}
+game-ghost-piece[master]::after {
+	background-color: #C2C93C;
 }
 game-card {
 	display: flex;
