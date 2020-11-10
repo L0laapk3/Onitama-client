@@ -1,5 +1,7 @@
 'use strict';
 
+const ws = new WebSocket("wss://litama.herokuapp.com");
+
 const cards = {};
 for (let card of CARDS.base)
 	cards[card.name] = card;
@@ -71,10 +73,21 @@ function removeHighlights() {
 		el.remove();
 	highlights = [];
 }
-let latestData;
-function setBoard(data) {
+board.el.onclick = _ => {
+	if (!selectedCell)
+		return;
+		selectedCell = undefined;
 	removeHighlights();
+}
+let latestData;
+let lastPollTimer;
+function setBoard(data) {
+	if (latestData && latestData.moves.length > data.moves.length)
+		return;
 	latestData = data;
+	clearTimeout(lastPollTimer);
+	lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 2000);
+	removeHighlights();
 	if (latestData.gameState != "in progress")
 		return console.error("game ended..");
 	const participating = localStorage["match-" + data.matchId];
@@ -119,20 +132,22 @@ function setBoard(data) {
 			// move piece
 			const toCell = newPieces[type][i];
 			const fromCell = removedPieces[type][i];
-			toCell.piece = fromCell.piece;
+			const piece = fromCell.piece;
+			toCell.piece = piece;
 			fromCell.piece = undefined;
-			toCell.piece.x = toCell.x;
-			toCell.piece.y = toCell.y;
-			toCell.piece.el.style.setProperty("--x", toCell.x);
-			toCell.piece.el.style.setProperty("--y", toCell.y);
+			piece.x = toCell.x;
+			piece.y = toCell.y;
+			piece.el.style.setProperty("--x", toCell.x);
+			piece.el.style.setProperty("--y", toCell.y);
+			piece.el.setAttribute("moving", "");
+			setTimeout(_ => piece.el.removeAttribute("moving"));
 		}
 		for (; i < removedPieces[type].length; i++) {
 			// delete piece
 			const cell = removedPieces[type][i];
 			const piece = cell.piece;
-			cell.piece.el.style.setProperty("opacity", 0);
-			cell.piece.el.style.setProperty("z-index", -1);
-			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 500));
+			cell.piece.el.setAttribute("deleting", "");
+			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
 			cell.piece = undefined;
 		}
 		for (; i < newPieces[type].length; i++) {
@@ -158,8 +173,11 @@ function setBoard(data) {
 					return;
 				piece.el.onmouseenter();
 				selectedCell = cell;
+				e.stopPropagation();
 			}
 			piece.el.onmouseenter = _ => {
+				if (selectedCell)
+					return;
 				removeHighlights();
 				for (let i = 0; i < 25; i++) {
 					const y = piece.y - Math.floor(i / 5) + 2;
@@ -192,8 +210,9 @@ function setBoard(data) {
 						predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
 						predictedBoard[piece.x + 5 * piece.y] = '0';
 						let predictedCards = latestData.cards;
+						let lastSideCard = latestData.cards.side;
 						predictedCards.side = latestData.cards[latestData.currentTurn][useCard[0]];
-						predictedCards[latestData.currentTurn][useCard[0]] = latestData.cards.side;
+						predictedCards[latestData.currentTurn][useCard[0]] = lastSideCard;
 						setBoard({
 							gameState: latestData.gameState,
 							matchId: latestData.matchId,
@@ -214,7 +233,6 @@ function setBoard(data) {
 
 
 let subscribed = false;
-const ws = new WebSocket("wss://litama.herokuapp.com");
 ws.onerror = initialiseMainPage;
 ws.onmessage = e => {
 	const data = JSON.parse(e.data);
@@ -223,7 +241,8 @@ ws.onmessage = e => {
 		let joining = false;
 		switch(data.gameState) {
 		case "waiting for player":
-			ws.send("join " + data.matchId);
+			if (!localStorage["match-" + data.matchId])
+				ws.send("join " + data.matchId);
 			joining = true;
 		case "in progress":
 			if (!subscribed)
@@ -242,6 +261,8 @@ ws.onmessage = e => {
 	case "create":
 		console.log(data);
 		localStorage["match-" + data.matchId] = (data.color == "red" ? "R" : "B") + data.token;
+		history.pushState(undefined, undefined, window.location.pathname + "#" + data.matchId);
+		window.location.reload();
 		break;
 	case "error":
 	default:
@@ -259,7 +280,6 @@ ws.onmessage = e => {
 const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 if (match) {
 	ws.onopen = _ => {
-		setInterval(_ => ws.send("heartbeat"), 5000);
 		ws.send("state " + match[1]);
 	};
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
