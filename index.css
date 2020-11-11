@@ -68,9 +68,21 @@ game-board {
 	background-color: grey;
 	transition: background-color .25s ease-in-out;
 }
+game-board:not([flipped]) game-board-row:nth-child(1) game-board-cell:nth-child(3)::after,
+game-board[flipped] game-board-row:nth-child(5) game-board-cell:nth-child(3)::after,
+game-piece[blue] {
+	background-color: white;
+}
+game-board:not([flipped]) game-board-row:nth-child(5) game-board-cell:nth-child(3)::after,
+game-board[flipped] game-board-row:nth-child(1) game-board-cell:nth-child(3)::after,
+game-piece[red] {
+	background-color: black;
+}
+game-piece[blue]::before,
 game-board[turn="blue"] {
 	background-color: deepskyblue;
 }
+game-piece[red]::before,
 game-board[turn="red"] {
 	background-color: red;
 }
@@ -88,6 +100,15 @@ game-board-cell {
 game-board-row:nth-child(even) > game-board-cell:nth-child(odd),
 game-board-row:nth-child(odd) > game-board-cell:nth-child(even) {
 	background-color: var(--light-square);
+}
+game-board-row:nth-child(4n+1) game-board-cell:nth-child(3)::after {
+    content: "";
+    display: flex;
+    width: 24%;
+	height: 24%;
+	transform: rotate(45deg);
+	background-color: var(--light-square) !important;
+	margin: auto;
 }
 game-ghost-piece,
 game-piece {
@@ -131,12 +152,6 @@ game-ghost-piece::before {
 	height: 80%;
 	border-radius: 50%;
 }
-game-piece[blue] {
-	background-color: white;
-}
-game-piece[red] {
-	background-color: black;
-}
 game-piece::before {
 	content: "";
 	display: flex;
@@ -145,12 +160,6 @@ game-piece::before {
 	height: 80%;
 	border-radius: 50%;
 	margin: 10%;
-}
-game-piece[blue]::before {
-	background-color: deepskyblue;
-}
-game-piece[red]::before {
-	background-color: red;
 }
 game-ghost-piece[master]::after,
 game-piece[master]::after {
