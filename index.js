@@ -110,6 +110,7 @@ board.el.onclick = _ => {
 	removeHighlights();
 }
 let lastPollTimer;
+let lastboardstr;
 function setBoard(data) {
 	if (latestData && latestData.moves.length > data.moves.length)
 		return;
@@ -151,10 +152,26 @@ function setBoard(data) {
 			const cell = board.cells[y][x];
 			if (cell.piece && cell.piece.value != p)
 				removedPieces[cell.piece.value - 1].push(cell);
-			if (p && (!cell.piece || cell.piece.value != p)) {
+			if (p && (!cell.piece || cell.piece.value != p))
 				newPieces[p - 1].push(cell);
-			}
 			i++;
+		}
+	if (lastboardstr == data.board) {
+		for (let grp of [newPieces, removedPieces])
+			for (let arr of grp)
+				if (arr.length)
+					throw Error("same board but new ops needed");
+	}
+	lastboardstr = data.board;
+	for (let type = 0; type < 4; type++)
+		for (let i = newPieces[type].length; i < removedPieces[type].length; i++) {
+			// delete piece
+			const cell = removedPieces[type][i];
+			const piece = cell.piece;
+			piece.remove = true;
+			cell.piece.el.setAttribute("deleting", "");
+			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
+			cell.piece = undefined;
 		}
 	for (let type = 0; type < 4; type++) {
 		let i = 0;
@@ -171,16 +188,6 @@ function setBoard(data) {
 			piece.el.style.setProperty("--y", toCell.y);
 			piece.el.setAttribute("moving", "");
 			setTimeout(_ => piece.el.removeAttribute("moving"));
-		}
-		for (; i < removedPieces[type].length; i++) {
-			// delete piece
-			const cell = removedPieces[type][i];
-			const piece = cell.piece;
-			console.log("deleting", piece);
-			piece.remove = true;
-			cell.piece.el.setAttribute("deleting", "");
-			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
-			cell.piece = undefined;
 		}
 		for (; i < newPieces[type].length; i++) {
 			// create piece
@@ -208,7 +215,6 @@ function setBoard(data) {
 				e.stopPropagation();
 			}
 			piece.el.onmouseenter = _ => {
-				console.log("hi");
 				if (selectedCell || piece.removed)
 					return;
 				removeHighlights();
