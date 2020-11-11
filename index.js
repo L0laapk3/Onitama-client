@@ -147,7 +147,7 @@ function setBoard(data) {
 	}
 	board.cards.blue[0].set(data.cards.blue[0]);
 	board.cards.blue[1].set(data.cards.blue[1]);
-	board.cards.side.flip((participating[0] == "B") == (data.currentTurn == "red"));
+	board.cards.side.flip((participating ? participating[0] == "B" : false) == (data.currentTurn == "red"));
 	board.cards.side.set(data.cards.side);
 	board.cards.red[0].set(data.cards.red[0]);
 	board.cards.red[1].set(data.cards.red[1]);
