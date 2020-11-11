@@ -3,7 +3,7 @@
 }
 
 body {
-	--board-size: calc(55vw * 160 / 151);
+	--board-size: calc(55 * var(--vh, 1vh));
 	--light-square: #E3C7A3;
 	--dark-square: #BC926D;
     height: 100%;
@@ -12,12 +12,26 @@ body {
 	display: block;
     font-family: clear sans, helvetica neue, Arial, sans-serif;
 }
-@media (min-aspect-ratio: 151/160) {
+@media (max-aspect-ratio: 14/16) {
 	body {
-		--board-size: calc(55 * var(--vh, 1vh));
+		--board-size: calc(46 * var(--vh, 1vh));
+	}
+	game-container {
+		max-width: calc(1.06 * var(--board-size)) !important;
+		flex-wrap: wrap;
+	}
+	game-container > game-card {
+		margin: 0 auto !important;
 	}
 }
-
+@media (max-aspect-ratio: 21/32) {
+	body {
+		--board-size: calc(70vw);
+	}
+}
+game-container > game-card {
+	margin: 0 0 0 calc(.1 * var(--board-size));
+}
 game-container {
 	height: 100%;
 	max-width: calc(1.51 * var(--board-size));
@@ -26,6 +40,7 @@ game-container {
     justify-content: space-between;
 	align-items: center;
 	user-select: none;
+	flex-direction: row-reverse;
 }
 board-container {
 	max-height: calc(1.6 * var(--board-size));

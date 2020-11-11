@@ -66,8 +66,8 @@ cardChoiceOverlay.onclick = _ => {
 boardContainer.append(cardChoiceOverlay);
 boardContainer.append(board.cards.bottom[0].el);
 boardContainer.append(board.cards.bottom[1].el);
-container.append(boardContainer);
 container.append(board.cards.side.el);
+container.append(boardContainer);
 for (let y = 0; y < 5; y++) {
 	const rowEl = document.createElement("game-board-row");
 	for (let x = 0; x < 5; x++) {
