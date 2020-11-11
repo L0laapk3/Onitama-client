@@ -42,6 +42,12 @@ class Card {
 		for (let i = 0; i < 25; i++)
 			this.gridEl.children[i].setAttribute("possible", this.moves[i]);
 	}
+	setOwned(owned) {
+		if (owned)
+			this.el.setAttribute("owned", "");
+		else
+			this.el.removeAttribute("owned");
+	}
 }
 const board = {
 	cards: {
@@ -72,6 +78,8 @@ createNewButton.onclick = _ => initialiseMainPage();
 sidebarContainer.append(createNewButton);
 sidebarContainer.append(board.cards.side.el);
 const playingAs = document.createElement("sidebar-playing-as");
+const clickToFlip = document.createElement("sidebar-clickToFlip");
+playingAs.append(clickToFlip);
 sidebarContainer.append(playingAs);
 container.append(sidebarContainer);
 container.append(boardContainer);
@@ -102,7 +110,7 @@ function removeHighlights() {
 		el.remove();
 	highlights = [];
 	if (latestData)
-		for (let card of board.cards.bottom) {
+		for (let card of board.cards[latestData.currentTurn]) {
 			card.el.removeAttribute("highlighted");
 			if (card.el.hasAttribute("highlighted-individual")) {
 				card.el.removeAttribute("highlighted-individual");
@@ -119,17 +127,17 @@ board.el.onclick = _ => {
 let lastMatchId;
 let lastPollTimer;
 let lastboardstr;
+let inverted = false;
 function setBoard(data) {
 	if (latestData && latestData.moves.length > data.moves.length)
 		return;
-	latestData = data;
 	clearTimeout(lastPollTimer);
 	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
 	const participating = localStorage["match-" + data.matchId];
-	const flipped = participating && participating[0] == "B";
+	let flipped = participating && participating[0] == "B";
 	const token = participating && participating.substr(1);
-	if (latestData.gameState == "ended") {
+	if (data.gameState == "ended") {
 		container.removeAttribute("playable");
 		container.setAttribute("winner", data.winner);
 		board.el.removeAttribute("turn");
@@ -141,18 +149,42 @@ function setBoard(data) {
 			container.removeAttribute("playable");
 		board.el.setAttribute("turn", data.currentTurn);
 	}
-	if (flipped) {
-		board.el.setAttribute("flipped", "");
-		board.cards.red = board.cards.top;
-		board.cards.blue = board.cards.bottom;
-	} else {
-		board.el.removeAttribute("flipped");
-		board.cards.red = board.cards.bottom;
-		board.cards.blue = board.cards.top;
+	if (!latestData) {
+		const fixFlip = _ => {
+			if (flipped) {
+				board.el.setAttribute("flipped", "");
+				board.cards.red = board.cards.top;
+				board.cards.blue = board.cards.bottom;
+			} else {
+				board.el.removeAttribute("flipped");
+				board.cards.red = board.cards.bottom;
+				board.cards.blue = board.cards.top;
+			}
+			for (let card of board.cards.blue)
+				card.setOwned(participating && participating[0] == "B")
+			for (let card of board.cards.red)
+				card.setOwned(participating && participating[0] == "R")
+		};
+		fixFlip();
+		playingAs.onclick = _ => {
+			selectedCell = undefined;
+			removeHighlights();
+			flipped = !flipped;
+			inverted = !inverted;
+			const topCards = [board.cards.top[0].name, board.cards.top[1].name];
+			board.cards.top[0].set(board.cards.bottom[0].name);
+			board.cards.top[1].set(board.cards.bottom[1].name);
+			board.cards.bottom[0].set(topCards[0]);
+			board.cards.bottom[1].set(topCards[1]);
+			fixFlip();
+			currentCards = data.currentTurn == "blue" ? board.cards.blue : board.cards.red;
+			board.cards.side.flip(((participating ? participating[0] == "B" : false) == (latestData.currentTurn == "red")) != inverted);
+		};
 	}
+	latestData = data;
 	board.cards.blue[0].set(data.cards.blue[0]);
 	board.cards.blue[1].set(data.cards.blue[1]);
-	board.cards.side.flip((participating ? participating[0] == "B" : false) == (data.currentTurn == "red"));
+	board.cards.side.flip(((participating ? participating[0] == "B" : false) == (data.currentTurn == "red")) != inverted);
 	board.cards.side.set(data.cards.side);
 	board.cards.red[0].set(data.cards.red[0]);
 	board.cards.red[1].set(data.cards.red[1]);
@@ -242,7 +274,7 @@ function setBoard(data) {
 					let usableCards = [];
 					for (let j = 0; j < currentCards.length; j++) {
 						const card = currentCards[j];
-						if (card.moves[piece.value <= 2 ? i : 24 - i] == '1') {
+						if (card.moves[((piece.value <= 2) != inverted) ? i : 24 - i] == '1') {
 							usableCards.push(j);
 							if (allUsableCards.indexOf(j) == -1)
 								allUsableCards.push(j);
@@ -265,7 +297,7 @@ function setBoard(data) {
 								currentCards[j].el.removeAttribute("highlighted");
 							else {
 								currentCards[j].el.setAttribute("highlighted-individual", "");
-								currentCards[j].gridEl.children[piece.value <= 2 ? i : 24 - i].setAttribute("highlighted", "");
+								currentCards[j].gridEl.children[(piece.value <= 2) != inverted ? i : 24 - i].setAttribute("highlighted", "");
 							}
 					};
 					highlightEl.onmouseleave = _ => {
@@ -275,7 +307,7 @@ function setBoard(data) {
 							currentCards[j].el.setAttribute("highlighted", "");
 						for (let j of usableCards) {
 							currentCards[j].el.removeAttribute("highlighted-individual");
-							currentCards[j].gridEl.children[piece.value <= 2 ? i : 24 - i].removeAttribute("highlighted");
+							currentCards[j].gridEl.children[(piece.value <= 2) != inverted ? i : 24 - i].removeAttribute("highlighted");
 						}
 					};
 					highlightEl.onclick = _ => {

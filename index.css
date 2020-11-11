@@ -261,9 +261,6 @@ game-choice-overlay[visible] {
 	pointer-events: all;
 	opacity: 1;
 }
-game-choice-overlay ~ game-card {
-	z-index: 10;
-}
 sidebar-container {
 	display: flex;
 	margin-left: calc(.1 * var(--board-size));
@@ -283,6 +280,10 @@ game-card {
 	flex-direction: row;
 	transition: border-color .25s ease-in-out;
 }
+game-card[owned][highlighted] {
+	z-index: 10;
+	cursor: pointer;
+}
 sidebar-container game-card {
 	margin: 0;
 }
@@ -292,15 +293,22 @@ sidebar-playing-as {
 	background-color: #FBF7D5;
 	flex-direction: column;
     justify-content: center;
-}
-sidebar-create-button {
 	cursor: pointer;
+    position: relative;
 }
 sidebar-create-button::before,
 sidebar-playing-as::before,
 sidebar-playing-as::after {
 	text-align: center;
 	font-size: calc(.035 * var(--board-size));
+    line-height: calc(.045 * var(--board-size));
+}
+sidebar-clickToFlip::before {
+	content: "Click to flip";
+    font-size: calc(.02 * var(--board-size));
+    position: absolute;
+    right: calc(.006 * var(--board-size));
+    bottom: calc(.006 * var(--board-size));
 }
 sidebar-create-button::before,
 sidebar-playing-as::after {
