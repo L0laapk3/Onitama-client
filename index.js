@@ -66,7 +66,14 @@ cardChoiceOverlay.onclick = _ => {
 boardContainer.append(cardChoiceOverlay);
 boardContainer.append(board.cards.bottom[0].el);
 boardContainer.append(board.cards.bottom[1].el);
-container.append(board.cards.side.el);
+const sidebarContainer = document.createElement("sidebar-container");
+const createNewButton = document.createElement("sidebar-create-button");
+createNewButton.onclick = _ => initialiseMainPage();
+sidebarContainer.append(createNewButton);
+sidebarContainer.append(board.cards.side.el);
+const playingAs = document.createElement("sidebar-playing-as");
+sidebarContainer.append(playingAs);
+container.append(sidebarContainer);
 container.append(boardContainer);
 for (let y = 0; y < 5; y++) {
 	const rowEl = document.createElement("game-board-row");
@@ -109,6 +116,7 @@ board.el.onclick = _ => {
 		selectedCell = undefined;
 	removeHighlights();
 }
+let lastMatchId;
 let lastPollTimer;
 let lastboardstr;
 function setBoard(data) {
@@ -124,9 +132,9 @@ function setBoard(data) {
 	const flipped = participating && participating[0] == "B";
 	const token = participating && participating.substr(1);
 	if (token)
-		board.el.setAttribute("playable", participating[0] == "B" ? "blue" : "red");
+		container.setAttribute("playable", participating[0] == "B" ? "blue" : "red");
 	else
-		board.el.removeAttribute("playable");
+		container.removeAttribute("playable");
 	board.el.setAttribute("turn", data.currentTurn);
 	if (flipped) {
 		board.el.setAttribute("flipped", "");
@@ -325,12 +333,14 @@ ws.onmessage = e => {
 	const data = JSON.parse(e.data);
 	switch(data.messageType) {
 	case "state":
+		lastMatchId = data.matchId;
 		let joining = false;
 		switch(data.gameState) {
 		case "waiting for player":
-			if (localStorage["match-" + data.matchId])
+			if (localStorage["match-" + data.matchId]) {
+				container.setAttribute("playable", localStorage["match-" + data.matchId][0] == "B" ? "blue" : "red");
 				container.setAttribute("waiting-opponent", "");
-			else
+			} else
 				ws.send("join " + data.matchId);
 			joining = true;
 		case "in progress":
@@ -352,7 +362,11 @@ ws.onmessage = e => {
 	case "join":
 		ws.send("spectate " + data.matchId);
 		localStorage["match-" + data.matchId] = (data.color == "red" ? "R" : "B") + data.token;
-		history.pushState(undefined, undefined, window.location.pathname + "#" + data.matchId);
+		if (window.location.hash.length < 1)
+			history.replaceState(undefined, undefined, window.location.pathname + "#" + data.matchId);
+		else
+			history.pushState(undefined, undefined, window.location.pathname + "#" + data.matchId);
+		lastMatchId = data.matchId;
 		break;
 	case "error":
 	default:
@@ -366,6 +380,14 @@ ws.onmessage = e => {
 		throw Error();
 	}
 };
+window.onpopstate = history.onpushstate = _ => {
+	const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
+	if (match) {
+		if (lastMatchId && match[1] != lastMatchId)
+			window.location.reload();
+	} else if (lastMatchId)
+		window.location.reload();
+};
 
 const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 if (match) {
@@ -378,8 +400,11 @@ if (match) {
 
 
 function initialiseMainPage() {
-	if (latestData)
+	removeHighlights();
+	if (lastMatchId) {
+		history.pushState(undefined, undefined, window.location.pathname);
 		window.location.reload();
+	}
 	ws.send("create");
 }
 

@@ -22,8 +22,15 @@ body {
 		flex-wrap: wrap;
 		align-items: initial !important;
 	}
-	game-container > game-card {
-		margin: auto auto 0 auto !important;
+	sidebar-container {
+		width: calc(1.06 * var(--board-size)) !important;
+		justify-content: center;
+		margin-left: 0 !important;
+		margin-top: auto;
+		height: initial !important;
+	}
+	sidebar-container game-card {
+		margin: 0 calc(.05 * var(--board-size)) !important;
 	}
 }
 @media (max-aspect-ratio: 147/272) {
@@ -31,12 +38,9 @@ body {
 		--board-size: calc(85vw);
 	}
 }
-game-container > game-card {
-	margin: 0 0 0 calc(.1 * var(--board-size));
-}
 game-container {
 	height: 100%;
-	max-width: calc(1.51 * var(--board-size));
+	max-width: calc(1.53 * var(--board-size));
 	margin: 0 auto;
 	display: flex;
     justify-content: space-between;
@@ -112,8 +116,8 @@ game-board[flipped] game-piece {
 	left: calc(4% + 20% * (4 - var(--x)));
 	top: calc(4% + 20% * (4 - var(--y)));
 }
-game-board[playable="blue"][turn="blue"] game-piece[blue],
-game-board[playable="red"][turn="red"] game-piece[red] {
+game-container[playable="blue"] game-board[turn="blue"] game-piece[blue],
+game-container[playable="red"] game-board[turn="red"] game-piece[red] {
 	pointer-events: all;
 }
 game-ghost-piece {
@@ -198,16 +202,69 @@ game-choice-overlay[visible] {
 game-choice-overlay ~ game-card {
 	z-index: 10;
 }
-game-card {
-	background-color: white;
+sidebar-container {
 	display: flex;
-	flex: 0 0 calc(.35  * var(--board-size));
+	margin-left: calc(.1 * var(--board-size));
+    width: calc(.37 * var(--board-size));
+	flex-wrap: wrap;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+sidebar-create-button,
+sidebar-playing-as,
+game-card {
+	display: flex;
 	height: calc(.17 * var(--board-size));
-	margin: 0 calc(.05 * var(--board-size));
 	border: solid calc(.01 * var(--board-size)) grey;
 	border-radius: calc(.025 * var(--board-size));
 	flex-direction: row;
 	transition: border-color .25s ease-in-out;
+}
+sidebar-container game-card {
+	margin: 0;
+}
+sidebar-create-button,
+sidebar-playing-as {
+	flex: 1 0 calc(.1 * var(--board-size));
+	background-color: #FBF7D5;
+	flex-direction: column;
+    justify-content: center;
+}
+sidebar-create-button {
+	cursor: pointer;
+}
+sidebar-create-button::before,
+sidebar-playing-as::before,
+sidebar-playing-as::after {
+	text-align: center;
+	font-size: calc(.035 * var(--board-size));
+}
+sidebar-create-button::before,
+sidebar-playing-as::after {
+	font-weight: 700;
+}
+sidebar-create-button::before {
+	content: "new game";
+}
+sidebar-playing-as::before {
+	content: "spectating";
+}
+game-container[playable] sidebar-playing-as::before {
+	content: "playing as: ";
+}
+game-container[playable="red"] sidebar-playing-as::after {
+	content: "red";
+	color: red;
+}
+game-container[playable="blue"] sidebar-playing-as::after {
+	content: "blue";
+	color: deepskyblue;
+}
+game-card {
+	flex: 0 0 calc(.35  * var(--board-size));
+	margin: 0 calc(.05 * var(--board-size));
+	background-color: white;
 }
 game-card[highlighted] {
 	border-color: #C2C93C;
