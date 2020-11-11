@@ -382,8 +382,6 @@ ws.onmessage = e => {
 				ws.send("join " + data.matchId);
 			joining = true;
 		case "in progress":
-			if (!subscribed)
-				ws.send("spectate " + data.matchId);
 			if (joining)
 				break;
 			container.removeAttribute("waiting-opponent");
@@ -393,13 +391,12 @@ ws.onmessage = e => {
 		}
 		break;
 	case "spectate":
-		subscribed = true;
 	case "move":
 		break;
 	case "create":
 		copyToClipboard("https://git.io/onitama#" + data.matchId, "Copied invite link to clipboard");
-	case "join":
 		ws.send("spectate " + data.matchId);
+	case "join":
 		localStorage["match-" + data.matchId] = (data.color == "red" ? "R" : "B") + data.token;
 		if (window.location.hash.length < 1)
 			history.replaceState(undefined, undefined, window.location.pathname + "#" + data.matchId);
@@ -437,8 +434,7 @@ ws.send = s => {
 const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 if (match) {
 	ws.onopen = _ => {
-		// subscribed = true;
-		ws.send("state " + match[1]);
+		ws.send("spectate " + match[1]);
 	};
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
 } else
