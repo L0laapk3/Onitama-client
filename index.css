@@ -162,6 +162,22 @@ game-piece[master]::after {
 game-ghost-piece[master]::after {
 	background-color: #C2C93C;
 }
+game-container[waiting-opponent] game-board::after {
+	content: "waiting for opponent...";
+	display: flex;
+	position: absolute;
+	background: #555c;
+	width: calc(.3 * var(--board-size));
+	border-radius: calc(.04 * var(--board-size));
+	left: calc(50% - .185 * var(--board-size));
+	top: calc(50% - .09 * var(--board-size));
+	text-align: center;
+	font-size: calc(.04 * var(--board-size));
+	line-height: calc(.055 * var(--board-size));
+	padding: calc(.035 * var(--board-size));
+	color: white;
+	font-weight: 400;
+}
 game-choice-overlay {
 	display: block;
     position: fixed;
@@ -236,4 +252,34 @@ game-card-name {
 	line-height: calc(.17 * var(--board-size));
 	font-weight: 700;
 	font-size: calc(.042 * var(--board-size));
+}
+#copyTextBox {
+	position: fixed;
+	height: 0;
+	width: 0;
+	top: -500vh;
+}
+toast-notification {
+	--toast-size: calc(.5 * var(--board-size));
+	display: block;
+	position: absolute;
+	left: 50%;
+	top: 70%;
+	transform: translate(-50%, -50%);
+	margin: auto;
+	max-width: var(--toast-size);
+	background: #555c;
+	z-index: 9;
+	color: white;
+	border: solid calc(var(--toast-size) * .05) transparent;
+	padding: calc(var(--toast-size) * .02);
+	border-radius: calc(var(--toast-size) * .11);
+	font-weight: normal;
+	font-size: calc(var(--toast-size) * .059);
+	opacity: 0;
+	transition: opacity .5s ease-in-out;
+	user-select: none;
+}
+toast-notification[visible] {
+	opacity: 1;
 }

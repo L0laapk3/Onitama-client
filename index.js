@@ -328,7 +328,9 @@ ws.onmessage = e => {
 		let joining = false;
 		switch(data.gameState) {
 		case "waiting for player":
-			if (!localStorage["match-" + data.matchId])
+			if (localStorage["match-" + data.matchId])
+				container.setAttribute("waiting-opponent", "");
+			else
 				ws.send("join " + data.matchId);
 			joining = true;
 		case "in progress":
@@ -336,6 +338,7 @@ ws.onmessage = e => {
 				ws.send("spectate " + data.matchId);
 			if (joining)
 				break;
+			container.removeAttribute("waiting-opponent");
 			setBoard(data);
 			break;
 		}
@@ -344,12 +347,12 @@ ws.onmessage = e => {
 		subscribed = true;
 	case "move":
 		break;
-	case "join":
 	case "create":
-		console.log(data);
+		copyToClipboard("https://git.io/onitama#" + data.matchId, "Copied invite link to clipboard");
+	case "join":
+		ws.send("spectate " + data.matchId);
 		localStorage["match-" + data.matchId] = (data.color == "red" ? "R" : "B") + data.token;
 		history.pushState(undefined, undefined, window.location.pathname + "#" + data.matchId);
-		window.location.reload();
 		break;
 	case "error":
 	default:
@@ -371,9 +374,55 @@ if (match) {
 	};
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
 } else
-	initialiseMainPage();
+	ws.onopen = _ => initialiseMainPage();
 
 
 function initialiseMainPage() {
+	if (latestData)
+		window.location.reload();
+	ws.send("create");
+}
 
+
+function copyToClipboard(value, message, i) {
+	const copyBox = document.getElementById("copyTextBox");
+	copyBox.value = value;
+	copyBox.focus();
+	copyBox.select();
+	let successful = false;
+	try {
+		successful = document.execCommand('copy');
+	} catch (err) {}
+	if (successful)
+		displayToast(message);
+	else if ((i || 0) < 40)
+		setTimeout(copyToClipboard, 100, value, message, (i || 0) + 1);
+	else
+		console.error("copying failed");
+}
+
+const toastQueue = [];
+function displayToast(message) {
+	const displayNextToast = _ => {
+		const el = document.createElement("toast-notification");
+		el.innerText = toastQueue[0];
+		document.body.append(el);
+		window.requestAnimationFrame(_ => {
+			const next = _ => {
+				toastQueue.shift();
+				if (toastQueue.length)
+					displayNextToast();
+				el.removeAttribute("visible", "");
+				window.requestAnimationFrame(_ => setTimeout(_ => el.remove(), 500));
+			};
+			el.setAttribute("visible", "");
+			const timer = setTimeout(next, 4000);
+			el.onclick = _ => {
+				clearTimeout(timer);
+				next();
+			};
+		});
+	};
+	if (toastQueue.push(message) == 1)
+		displayNextToast();
 }
