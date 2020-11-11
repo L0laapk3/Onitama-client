@@ -126,16 +126,21 @@ function setBoard(data) {
 	clearTimeout(lastPollTimer);
 	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
-	if (latestData.gameState != "in progress")
-		return console.error("game ended..");
 	const participating = localStorage["match-" + data.matchId];
 	const flipped = participating && participating[0] == "B";
 	const token = participating && participating.substr(1);
-	if (token)
-		container.setAttribute("playable", participating[0] == "B" ? "blue" : "red");
-	else
+	if (latestData.gameState == "ended") {
 		container.removeAttribute("playable");
-	board.el.setAttribute("turn", data.currentTurn);
+		container.setAttribute("winner", data.winner);
+		board.el.removeAttribute("turn");
+	} else {
+		container.removeAttribute("winner");
+		if (token)
+			container.setAttribute("playable", participating[0] == "B" ? "blue" : "red");
+		else
+			container.removeAttribute("playable");
+		board.el.setAttribute("turn", data.currentTurn);
+	}
 	if (flipped) {
 		board.el.setAttribute("flipped", "");
 		board.cards.red = board.cards.top;
@@ -349,6 +354,7 @@ ws.onmessage = e => {
 			if (joining)
 				break;
 			container.removeAttribute("waiting-opponent");
+		case "ended":
 			setBoard(data);
 			break;
 		}
@@ -383,7 +389,7 @@ ws.onmessage = e => {
 window.onpopstate = history.onpushstate = _ => {
 	const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 	if (match) {
-		if (lastMatchId && match[1] != lastMatchId)
+		if (lastMatchId && (match[1] != lastMatchId))
 			window.location.reload();
 	} else if (lastMatchId)
 		window.location.reload();
@@ -391,9 +397,7 @@ window.onpopstate = history.onpushstate = _ => {
 
 const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 if (match) {
-	ws.onopen = _ => {
-		ws.send("state " + match[1]);
-	};
+	ws.onopen = _ => ws.send("state " + match[1]);
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
 } else
 	ws.onopen = _ => initialiseMainPage();

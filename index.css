@@ -252,16 +252,27 @@ sidebar-playing-as::after {
 sidebar-create-button::before {
 	content: "new game";
 }
+game-container[winner] sidebar-playing-as {
+	flex-direction: row-reverse;
+    align-items: center;
+}
+game-container[winner] sidebar-playing-as::before {
+	margin-left: calc(.008 * var(--board-size));
+	content: "wins";
+	font-weight: 700;
+}
 sidebar-playing-as::before {
 	content: "spectating";
 }
 game-container[playable] sidebar-playing-as::before {
 	content: "playing as: ";
 }
+game-container[winner="red"] sidebar-playing-as::after,
 game-container[playable="red"] sidebar-playing-as::after {
 	content: "red";
 	color: red;
 }
+game-container[winner="blue"] sidebar-playing-as::after,
 game-container[playable="blue"] sidebar-playing-as::after {
 	content: "blue";
 	color: deepskyblue;
