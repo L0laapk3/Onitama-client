@@ -3,6 +3,13 @@
 // warning: this code isnt meant to be maintainable
 // its all quick and dirty
 
+window.onresize = _ => {
+	// We execute the same script as before
+	let vh = window.innerHeight * 0.01;
+	document.documentElement.style.setProperty('--vh', `${vh}px`);
+};
+window.onresize();
+
 const ws = new WebSocket("wss://litama.herokuapp.com");
 
 const cards = {};
@@ -12,15 +19,20 @@ for (let card of CARDS.base)
 class Card {
 	constructor(flipped) {
 		this.el = document.createElement("game-card");
-		if (flipped)
-			this.el.setAttribute("flipped", "");
-		this.flipped = flipped;
+		this.flip(flipped)
 		this.gridEl = document.createElement("game-card-grid");
 		for (let i = 0; i < 25; i++)
 			this.gridEl.append(document.createElement("game-card-grid-cell"));
 		this.el.append(this.gridEl);
 		this.nameEl = document.createElement("game-card-name");
 		this.el.append(this.nameEl);
+	}
+	flip(flipped) {
+		if (flipped)
+			this.el.setAttribute("flipped", "");
+		else
+			this.el.removeAttribute("flipped");
+		this.flipped = flipped;
 	}
 	set(name) {
 		const type = cards[name];
@@ -126,6 +138,7 @@ function setBoard(data) {
 	}
 	board.cards.blue[0].set(data.cards.blue[0]);
 	board.cards.blue[1].set(data.cards.blue[1]);
+	board.cards.side.flip((participating[0] == "B") == (data.currentTurn == "red"));
 	board.cards.side.set(data.cards.side);
 	board.cards.red[0].set(data.cards.red[0]);
 	board.cards.red[1].set(data.cards.red[1]);
@@ -163,6 +176,7 @@ function setBoard(data) {
 			// delete piece
 			const cell = removedPieces[type][i];
 			const piece = cell.piece;
+			console.log("deleting", piece);
 			piece.remove = true;
 			cell.piece.el.setAttribute("deleting", "");
 			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
@@ -194,6 +208,7 @@ function setBoard(data) {
 				e.stopPropagation();
 			}
 			piece.el.onmouseenter = _ => {
+				console.log("hi");
 				if (selectedCell || piece.removed)
 					return;
 				removeHighlights();

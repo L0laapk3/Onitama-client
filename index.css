@@ -14,7 +14,7 @@ body {
 }
 @media (min-aspect-ratio: 151/160) {
 	body {
-		--board-size: 55vh;
+		--board-size: calc(55 * var(--vh, 1vh));
 	}
 }
 
