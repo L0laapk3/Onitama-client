@@ -68,13 +68,9 @@ game-board {
 	background-color: grey;
 	transition: background-color .25s ease-in-out;
 }
-game-board:not([flipped]) game-board-row:nth-child(1) game-board-cell:nth-child(3)::after,
-game-board[flipped] game-board-row:nth-child(5) game-board-cell:nth-child(3)::after,
 game-piece[blue] {
 	background-color: white;
 }
-game-board:not([flipped]) game-board-row:nth-child(5) game-board-cell:nth-child(3)::after,
-game-board[flipped] game-board-row:nth-child(1) game-board-cell:nth-child(3)::after,
 game-piece[red] {
 	background-color: black;
 }
@@ -107,7 +103,7 @@ game-board-row:nth-child(4n+1) game-board-cell:nth-child(3)::after {
     width: 24%;
 	height: 24%;
 	transform: rotate(45deg);
-	background-color: var(--light-square) !important;
+	background-color: var(--light-square);
 	margin: auto;
 }
 game-ghost-piece,
