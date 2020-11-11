@@ -1,7 +1,7 @@
 'use strict';
 
 // warning: this code isnt meant to be maintainable
-// quick and dirty
+// its all quick and dirty
 
 const ws = new WebSocket("wss://litama.herokuapp.com");
 
@@ -27,9 +27,8 @@ class Card {
 		this.name = name;
 		this.nameEl.innerText = name;
 		this.moves = this.flipped ? type.moves : type.moves.split("").reverse().join("");
-		for (let i = 0; i < 25; i++) {
+		for (let i = 0; i < 25; i++)
 			this.gridEl.children[i].setAttribute("possible", this.moves[i]);
-		}
 	}
 }
 const board = {
@@ -46,6 +45,13 @@ const boardContainer = document.createElement("board-container");
 boardContainer.append(board.cards.top[0].el);
 boardContainer.append(board.cards.top[1].el);
 boardContainer.append(board.el);
+const cardChoiceOverlay = document.createElement("game-choice-overlay");
+cardChoiceOverlay.onclick = _ => {
+	cardChoiceOverlay.removeAttribute("visible");
+	selectedCell = undefined;
+	removeHighlights();
+};
+boardContainer.append(cardChoiceOverlay);
 boardContainer.append(board.cards.bottom[0].el);
 boardContainer.append(board.cards.bottom[1].el);
 container.append(boardContainer);
@@ -69,12 +75,21 @@ for (let y = 0; y < 5; y++) {
 let currentCards = [];
 let highlights = [];
 let selectedCell;
+let latestData;
 function removeHighlights() {
 	if (selectedCell)
 		return;
 	for (let el of highlights)
 		el.remove();
 	highlights = [];
+	if (latestData)
+		for (let card of board.cards.bottom) {
+			card.el.removeAttribute("highlighted");
+			if (card.el.hasAttribute("highlighted-individual")) {
+				card.el.removeAttribute("highlighted-individual");
+				card.gridEl.querySelector("[highlighted]").removeAttribute("highlighted");
+			}
+		}
 }
 board.el.onclick = _ => {
 	if (!selectedCell)
@@ -82,14 +97,13 @@ board.el.onclick = _ => {
 		selectedCell = undefined;
 	removeHighlights();
 }
-let latestData;
 let lastPollTimer;
 function setBoard(data) {
 	if (latestData && latestData.moves.length > data.moves.length)
 		return;
 	latestData = data;
 	clearTimeout(lastPollTimer);
-	lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 2000);
+	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
 	if (latestData.gameState != "in progress")
 		return console.error("game ended..");
@@ -149,6 +163,7 @@ function setBoard(data) {
 			// delete piece
 			const cell = removedPieces[type][i];
 			const piece = cell.piece;
+			piece.remove = true;
 			cell.piece.el.setAttribute("deleting", "");
 			window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
 			cell.piece = undefined;
@@ -179,9 +194,10 @@ function setBoard(data) {
 				e.stopPropagation();
 			}
 			piece.el.onmouseenter = _ => {
-				if (selectedCell)
+				if (selectedCell || piece.removed)
 					return;
 				removeHighlights();
+				let allUsableCards = [];
 				for (let i = 0; i < 25; i++) {
 					const y = piece.y - Math.floor(i / 5) + 2;
 					const x = piece.x + (i % 5) - 2;
@@ -189,13 +205,18 @@ function setBoard(data) {
 						continue;
 					if (board.cells[y][x].piece && ((board.cells[y][x].piece.value <= 2) == (piece.value <= 2)))
 						continue;
-					let useCard = [];
-					for (let j = 0; j < currentCards.length; j++)
-						if (currentCards[j].moves[piece.value <= 2 ? i : 24 - i] == "1") {
-							useCard.push(j);
+					let usableCards = [];
+					for (let j = 0; j < currentCards.length; j++) {
+						const card = currentCards[j];
+						if (card.moves[piece.value <= 2 ? i : 24 - i] == '1') {
+							usableCards.push(j);
+							if (allUsableCards.indexOf(j) == -1)
+								allUsableCards.push(j);
+							card.el.setAttribute("highlighted", "");
 							continue;
 						}
-					if (!useCard.length)
+					}
+					if (!usableCards.length)
 						continue;
 					let highlightEl = document.createElement("game-ghost-piece");
 					if (type % 2 == 1)
@@ -204,28 +225,70 @@ function setBoard(data) {
 					highlightEl.style.setProperty("--y", y);
 					board.el.append(highlightEl);
 					highlights.push(highlightEl);
+					highlightEl.onmouseover = _ => {
+						for (let j of allUsableCards)
+							if (usableCards.indexOf(j) == -1)
+								currentCards[j].el.removeAttribute("highlighted");
+							else {
+								currentCards[j].el.setAttribute("highlighted-individual", "");
+								currentCards[j].gridEl.children[piece.value <= 2 ? i : 24 - i].setAttribute("highlighted", "");
+							}
+					};
+					highlightEl.onmouseleave = _ => {
+						if (cardChoiceOverlay.hasAttribute("visible"))
+							return;
+						for (let j of allUsableCards)
+							currentCards[j].el.setAttribute("highlighted", "");
+						for (let j of usableCards) {
+							currentCards[j].el.removeAttribute("highlighted-individual");
+							currentCards[j].gridEl.children[piece.value <= 2 ? i : 24 - i].removeAttribute("highlighted");
+						}
+					};
 					highlightEl.onclick = _ => {
+						if (piece.removed)
+							return;
+							
+						const submitMove = cardChoice => {
+							const card = currentCards[usableCards[cardChoice]];
+							const pos = "abcde"[piece.x] + (piece.y+1) + "abcde"[x] + (y+1);
+							ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card.name + " " + pos);
+							let predictedBoard = latestData.board.split("");
+							predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
+							predictedBoard[piece.x + 5 * piece.y] = '0';
+							let predictedCards = latestData.cards;
+							let lastSideCard = latestData.cards.side;
+							predictedCards.side = latestData.cards[latestData.currentTurn][usableCards[cardChoice]];
+							predictedCards[latestData.currentTurn][usableCards[cardChoice]] = lastSideCard;
+							setBoard({
+								gameState: latestData.gameState,
+								matchId: latestData.matchId,
+								currentTurn: latestData.currentTurn == "red" ? "blue" : "red",
+								startingCards: latestData.startingCards,
+								moves: latestData.moves.concat([card.name + ":" + pos]),
+								winner: "none",
+								board: predictedBoard.join(""),
+								cards: predictedCards,
+							});
+						};
+
 						selectedCell = undefined;
-						const card = currentCards[useCard[0]].name;
-						const pos = "abcde"[piece.x] + (piece.y+1) + "abcde"[x] + (y+1);
-						ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card + " " + pos);
-						let predictedBoard = latestData.board.split("");
-						predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
-						predictedBoard[piece.x + 5 * piece.y] = '0';
-						let predictedCards = latestData.cards;
-						let lastSideCard = latestData.cards.side;
-						predictedCards.side = latestData.cards[latestData.currentTurn][useCard[0]];
-						predictedCards[latestData.currentTurn][useCard[0]] = lastSideCard;
-						setBoard({
-							gameState: latestData.gameState,
-							matchId: latestData.matchId,
-							currentTurn: latestData.currentTurn == "red" ? "blue" : "red",
-							startingCards: latestData.startingCards,
-							moves: latestData.moves.concat([card + ":" + pos]),
-							winner: "none",
-							board: predictedBoard.join(""),
-							cards: predictedCards,
-						})
+						if (usableCards.length > 1) {
+							cardChoiceOverlay.setAttribute("visible", "");
+							for (let j of usableCards) {
+								const card = currentCards[j];
+								card.el.onclick = _ => {
+									for (let j of usableCards)
+										currentCards[j].el.onclick = undefined;
+									cardChoiceOverlay.removeAttribute("visible");
+									submitMove(j);
+								};
+							}
+							for (let highlight of highlights)
+								if (highlight != highlightEl)
+									highlight.remove();
+							highlights = [highlightEl];
+						} else
+							submitMove(0);
 					};
 				}
 			};

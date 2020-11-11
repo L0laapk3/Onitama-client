@@ -144,7 +144,28 @@ game-piece[master]::after {
 game-ghost-piece[master]::after {
 	background-color: #C2C93C;
 }
+game-choice-overlay {
+	display: block;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+	background-color: #0007;
+	opacity: 0;
+    top: 0;
+	left: 0;
+	pointer-events: none;
+	z-index: 9;
+	transform: opacity .25s ease-in-out;
+}
+game-choice-overlay[visible] {
+	pointer-events: all;
+	opacity: 1;
+}
+game-choice-overlay ~ game-card {
+	z-index: 10;
+}
 game-card {
+	background-color: white;
 	display: flex;
 	flex: 0 0 calc(.35  * var(--board-size));
 	height: calc(.17 * var(--board-size));
@@ -152,6 +173,10 @@ game-card {
 	border: solid calc(.01 * var(--board-size)) grey;
 	border-radius: calc(.025 * var(--board-size));
 	flex-direction: row;
+	transition: border-color .25s ease-in-out;
+}
+game-card[highlighted] {
+	border-color: #C2C93C;
 }
 game-card[flipped] {
 	flex-direction: row-reverse;
@@ -175,9 +200,14 @@ game-card-grid-cell {
 	border-left: 0;
 	border-top: 0;
 	box-sizing: border-box;
+	transition: background-color .25s ease-in-out;
 }
 game-card-grid-cell[possible="1"] {
 	background-color: #777;
+}
+/* game-card[highlighted]:not([highlighted-individual]) game-card-grid-cell[possible="1"], */
+game-card-grid-cell[possible="1"][highlighted] {
+	background-color: #C2C93C;
 }
 game-card-grid-cell:nth-child(13) {
 	background-color: #333;
