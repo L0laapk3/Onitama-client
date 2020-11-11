@@ -18,15 +18,17 @@ body {
 	}
 	game-container {
 		max-width: calc(1.06 * var(--board-size)) !important;
+		max-height: 100%;
 		flex-wrap: wrap;
+		align-items: initial !important;
 	}
 	game-container > game-card {
-		margin: 0 auto !important;
+		margin: auto auto 0 auto !important;
 	}
 }
-@media (max-aspect-ratio: 21/32) {
+@media (max-aspect-ratio: 147/272) {
 	body {
-		--board-size: calc(70vw);
+		--board-size: calc(85vw);
 	}
 }
 game-container > game-card {
@@ -43,8 +45,9 @@ game-container {
 	flex-direction: row-reverse;
 }
 board-container {
-	max-height: calc(1.6 * var(--board-size));
+	max-height: calc(1.7 * var(--board-size));
 	flex: 0 0 calc(1.06 * var(--board-size));
+	margin: calc(.1 * var(--board-size)) 0;
 	display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
