@@ -336,6 +336,7 @@ let subscribed = false;
 ws.onerror = initialiseMainPage;
 ws.onmessage = e => {
 	const data = JSON.parse(e.data);
+	console.log("recv", data);
 	switch(data.messageType) {
 	case "state":
 		lastMatchId = data.matchId;
@@ -379,7 +380,7 @@ ws.onmessage = e => {
 		if (data.command == "heartbeat")
 			return;
 		console.error(data);
-		if (data.command == "state") {
+		if (data.command == "state" || data.command == "subscribe") {
 			delete localStorage["match-" + match[1]];
 			initialiseMainPage();
 		}
@@ -395,9 +396,18 @@ window.onpopstate = history.onpushstate = _ => {
 		window.location.reload();
 };
 
+const _send = ws.send;
+ws.send = s => {
+	console.log("send", s);
+	_send.bind(ws)(s);
+}
+
 const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
 if (match) {
-	ws.onopen = _ => ws.send("state " + match[1]);
+	ws.onopen = _ => {
+		// subscribed = true;
+		ws.send("state " + match[1]);
+	};
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
 } else
 	ws.onopen = _ => initialiseMainPage();

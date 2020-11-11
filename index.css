@@ -86,9 +86,11 @@ game-board-row {
 	display: flex;
 	height: 20%;
 	width: 100%;
+    position: relative;
 }
 game-board-cell {
 	display: flex;
+    position: relative;
 	height: 100%;
 	width: 20%;
 	background-color: var(--dark-square);
@@ -105,6 +107,61 @@ game-board-row:nth-child(4n+1) game-board-cell:nth-child(3)::after {
 	transform: rotate(45deg);
 	background-color: var(--light-square);
 	margin: auto;
+}
+game-board:not([flipped]) game-board-row:last-of-type {
+    counter-reset: letters;
+}
+game-board:not([flipped]) game-board-row:last-of-type game-board-cell {
+    counter-increment: letters;
+}
+game-board:not([flipped]) game-board {
+    counter-reset: rows;
+}
+game-board:not([flipped]) game-board-row {
+    counter-increment: rows;
+}
+game-board[flipped] game-board-row:last-of-type {
+    counter-reset: letters 6;
+}
+game-board[flipped] game-board-row:last-of-type game-board-cell {
+    counter-increment: letters -1;
+}
+game-board[flipped] {
+    counter-reset: rows 6;
+}
+game-board[flipped] game-board-row {
+    counter-increment: rows -1;
+}
+game-board-row:last-of-type game-board-cell::before {
+    content: counter(letters, lower-alpha);
+}
+game-board-row::after {
+    content: counter(rows);
+}
+game-board:not([flipped]) game-board-row:last-of-type game-board-cell::before {
+    bottom: 0;
+}
+game-board[flipped] game-board-row:last-of-type game-board-cell::before {
+	top: -400%;
+	right: 0;
+}
+game-board:not([flipped]) game-board-row::after {
+    right: 0;
+}
+game-board[flipped] game-board-row::after {
+    bottom: 0;
+}
+game-board-row:last-of-type game-board-cell::before,
+game-board-row::after {
+    position: absolute;
+    font-size: calc(.025 * var(--board-size));
+    margin: calc(.008 * var(--board-size)) calc(.012 * var(--board-size));
+    font-weight: 600;
+	color: var(--light-square);
+}
+game-board-row:last-of-type game-board-cell:nth-child(even)::before,
+game-board-row:nth-child(even)::after {
+	color: var(--dark-square);
 }
 game-ghost-piece,
 game-piece {
