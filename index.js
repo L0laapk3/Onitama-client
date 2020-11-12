@@ -365,6 +365,7 @@ function setBoard(data) {
 
 
 let subscribed = false;
+let spectateOnly = false;
 ws.onerror = initialiseMainPage;
 ws.onmessage = e => {
 	const data = JSON.parse(e.data);
@@ -375,8 +376,9 @@ ws.onmessage = e => {
 		let joining = false;
 		switch(data.gameState) {
 		case "waiting for player":
-			if (localStorage["match-" + data.matchId]) {
-				container.setAttribute("playable", localStorage["match-" + data.matchId][0] == "B" ? "blue" : "red");
+			if (localStorage["match-" + data.matchId] || spectateOnly) {
+				if (localStorage["match-" + data.matchId])
+					container.setAttribute("playable", localStorage["match-" + data.matchId][0] == "B" ? "blue" : "red");
 				container.setAttribute("waiting-opponent", "");
 			} else
 				ws.send("join " + data.matchId);
@@ -419,10 +421,11 @@ ws.onmessage = e => {
 	}
 };
 window.onpopstate = history.onpushstate = _ => {
-	const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
+	const match = document.location.hash.match(/^#(spectate-)?([0-9a-f]+)$/i);
 	if (match) {
-		if (lastMatchId && (match[1] != lastMatchId))
+		if (lastMatchId && (match[2] != lastMatchId) || spectateOnly != !!match[1])
 			window.location.reload();
+		spectateOnly = !!match[1];
 	} else if (lastMatchId)
 		window.location.reload();
 };
@@ -433,10 +436,11 @@ ws.send = s => {
 	_send.bind(ws)(s);
 }
 
-const match = document.location.hash.match(/^#([0-9a-f]+)$/i);
+const match = document.location.hash.match(/^#?(spectate-)?([0-9a-f]+)$/i);
 if (match) {
+	spectateOnly = !!match[1];
 	ws.onopen = _ => {
-		ws.send("spectate " + match[1]);
+		ws.send("spectate " + match[2]);
 	};
 	ws.onclose = _ => setTimeout(_ => window.location.reload(), 1000);
 } else
