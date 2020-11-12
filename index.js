@@ -386,6 +386,8 @@ ws.onmessage = e => {
 				break;
 			container.removeAttribute("waiting-opponent");
 		case "ended":
+			console.log(data.board, data.board.match(/.{1,5}/g))
+			data.board = data.board.match(/.{1,5}/g).map(x => x.split('').reverse().join('')).join('');
 			setBoard(data);
 			break;
 		}
