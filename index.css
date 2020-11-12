@@ -109,10 +109,10 @@ game-board-row:nth-child(4n+1) game-board-cell:nth-child(3)::after {
 	margin: auto;
 }
 game-board:not([flipped]) game-board-row:last-of-type {
-	counter-reset: letters;
+	counter-reset: letters 6;
 }
 game-board:not([flipped]) game-board-row:last-of-type game-board-cell {
-	counter-increment: letters;
+	counter-increment: letters -1;
 }
 game-board:not([flipped]) game-board {
 	counter-reset: rows;
@@ -121,10 +121,10 @@ game-board:not([flipped]) game-board-row {
 	counter-increment: rows;
 }
 game-board[flipped] game-board-row:last-of-type {
-	counter-reset: letters 6;
+	counter-reset: letters;
 }
 game-board[flipped] game-board-row:last-of-type game-board-cell {
-	counter-increment: letters -1;
+	counter-increment: letters;
 }
 game-board[flipped] {
 	counter-reset: rows 6;
@@ -138,19 +138,19 @@ game-board-row:last-of-type game-board-cell::before {
 game-board-row::after {
 	content: counter(rows);
 }
-game-board:not([flipped]) game-board-row:last-of-type game-board-cell::before {
+game-board game-board-row:last-of-type game-board-cell::before {
 	bottom: 0;
 }
-game-board[flipped] game-board-row:last-of-type game-board-cell::before {
+/* game-board[flipped] game-board-row:last-of-type game-board-cell::before {
 	top: -400%;
 	right: 0;
-}
-game-board:not([flipped]) game-board-row::after {
+} */
+game-board game-board-row::after {
 	right: 0;
 }
-game-board[flipped] game-board-row::after {
+/* game-board[flipped] game-board-row::after {
 	bottom: 0;
-}
+} */
 game-board-row:last-of-type game-board-cell::before,
 game-board-row::after {
 	position: absolute;

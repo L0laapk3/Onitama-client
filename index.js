@@ -316,7 +316,7 @@ function setBoard(data) {
 							
 						const submitMove = cardChoice => {
 							const card = currentCards[usableCards[cardChoice]];
-							const pos = "abcde"[piece.x] + (piece.y+1) + "abcde"[x] + (y+1);
+							const pos = "edcba"[piece.x] + (piece.y+1) + "edcba"[x] + (y+1);
 							ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card.name + " " + pos);
 							let predictedBoard = latestData.board.split("");
 							predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
