@@ -249,7 +249,7 @@ game-container[waiting-opponent] game-board::after {
 	display: flex;
 	position: absolute;
 	background: #555c;
-	width: calc(.3 * var(--board-size));
+	width: calc(.4 * var(--board-size));
 	border-radius: calc(.04 * var(--board-size));
 	left: calc(50% - .185 * var(--board-size));
 	top: calc(50% - .09 * var(--board-size));
@@ -261,7 +261,10 @@ game-container[waiting-opponent] game-board::after {
 	font-weight: 400;
 }
 game-container[waiting-opponent][playable] game-board::after {
-	content: "waiting for opponent...";
+	content: "waiting for opponent... (Click to copy invite)";
+}
+game-container[waiting-opponent][playable] {
+	cursor: pointer;
 }
 game-choice-overlay {
 	display: block;

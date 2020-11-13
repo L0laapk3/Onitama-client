@@ -420,6 +420,7 @@ ws.onmessage = e => {
 				if (localStorage["match-" + data.matchId])
 					container.setAttribute("playable", "");
 				container.setAttribute("waiting-opponent", "");
+				copyToClipboard(data.matchId);
 			} else {
 				requestUsername();
 				ws.send("join " + data.matchId + " " + localStorage.username);
@@ -439,7 +440,7 @@ ws.onmessage = e => {
 	case "move":
 		break;
 	case "create":
-		copyToClipboard("https://git.io/onitama#" + data.matchId, "Copied invite link to clipboard");
+		copyToClipboard(data.matchId);
 		ws.send("spectate " + data.matchId);
 		playerIndex = 0;
 	case "join":
@@ -504,24 +505,32 @@ function initialiseMainPage() {
 }
 
 
-function copyToClipboard(value, message, i) {
-	const copyBox = document.getElementById("copyTextBox");
-	copyBox.value = value;
-	copyBox.focus();
-	copyBox.select();
-	let successful = false;
-	try {
-		successful = document.execCommand('copy');
-	} catch (err) {}
-	if (successful)
-		displayToast(message);
-	else if ((i || 0) < 40)
-		setTimeout(copyToClipboard, 100, value, message, (i || 0) + 1);
-	else
-		console.error("copying failed");
+const toastQueue = [];
+function copyToClipboard(value) {
+	value = "https://git.io/onitama#" + value;
+	container.onclick = _ => {
+		if (!container.hasAttribute("waiting-opponent"))
+			return;
+		if (toastQueue.length)
+			return;
+
+		const copyBox = document.getElementById("copyTextBox");
+		copyBox.value = value;
+		copyBox.focus();
+		copyBox.select();
+		let successful = false;
+		try {
+			successful = document.execCommand('copy');
+		} catch (err) {}
+		if (successful) {
+			displayToast("Copied invite link to clipboard");
+		} else {
+			displayToast("Copying failed");
+			console.error("copying failed");
+		}
+	};
 }
 
-const toastQueue = [];
 function displayToast(message) {
 	const displayNextToast = _ => {
 		const el = document.createElement("toast-notification");
