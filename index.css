@@ -363,7 +363,7 @@ game-container[winner] sidebar-playing-as {
 }
 game-container[winner] sidebar-playing-as::before {
 	margin-left: calc(.008 * var(--board-size));
-	content: "wins";
+	content: "won";
 	font-weight: 700;
 }
 sidebar-playing-as::before {
