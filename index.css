@@ -204,7 +204,6 @@ game-ghost-piece::before {
 	width: 80%;
 	height: 80%;
 	border-radius: 50%;
-	background-color: lightgrey;
 	transition: background-color .25s ease-in-out;
 }
 game-piece::before {

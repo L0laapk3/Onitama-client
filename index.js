@@ -159,10 +159,13 @@ function setBoard(data) {
 	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
 	container.setAttribute("ongoing", "");
-	redNameEl.innerText = data.usernames.red;
-	blueNameEl.innerText = data.usernames.blue;
+	if (data.usernames) {
+		redNameEl.innerText = data.usernames.red;
+		blueNameEl.innerText = data.usernames.blue;
+	}
 	const participating = localStorage["match-" + data.matchId];
-	let flipped = participating && participating[0] == "B";
+	const isBlue = participating && (parseInt(participating[0]) == data.indices.blue);
+	let flipped = participating && isBlue == data.indices.blue;
 	const token = participating && participating.substr(1);
 	if (data.gameState == "ended") {
 		container.removeAttribute("playable");
@@ -171,7 +174,7 @@ function setBoard(data) {
 	} else {
 		container.removeAttribute("winner");
 		if (token)
-			container.setAttribute("playable", participating[0] == "B" ? "blue" : "red");
+			container.setAttribute("playable", isBlue ? "blue" : "red");
 		else
 			container.removeAttribute("playable");
 		board.el.setAttribute("turn", data.currentTurn);
@@ -188,9 +191,9 @@ function setBoard(data) {
 				board.cards.blue = board.cards.top;
 			}
 			for (let card of board.cards.blue)
-				card.setOwned(participating && participating[0] == "B")
+				card.setOwned(participating && isBlue)
 			for (let card of board.cards.red)
-				card.setOwned(participating && participating[0] == "R")
+				card.setOwned(participating && !isBlue)
 		};
 		fixFlip();
 		playingAs.onclick = _ => {
@@ -205,14 +208,14 @@ function setBoard(data) {
 			board.cards.bottom[1].set(topCards[1]);
 			fixFlip();
 			currentCards = data.currentTurn == "blue" ? board.cards.blue : board.cards.red;
-			board.cards.side.flip(((participating ? participating[0] == "B" : false) == (latestData.currentTurn == "red")) != inverted);
+			board.cards.side.flip(((participating  && isBlue) == (latestData.currentTurn == "red")) != inverted);
 			board.cards.side.flipSet();
 		};
 	}
 	latestData = data;
 	board.cards.blue[0].set(data.cards.blue[0]);
 	board.cards.blue[1].set(data.cards.blue[1]);
-	board.cards.side.flip(((participating ? participating[0] == "B" : false) == (data.currentTurn == "red")) != inverted);
+	board.cards.side.flip(((participating && isBlue) == (data.currentTurn == "red")) != inverted);
 	board.cards.side.set(data.cards.side);
 	board.cards.red[0].set(data.cards.red[0]);
 	board.cards.red[1].set(data.cards.red[1]);
@@ -278,7 +281,12 @@ function setBoard(data) {
 			piece.el.style.setProperty("--x", cell.x);
 			piece.el.style.setProperty("--y", cell.y);
 			board.el.append(piece.el);
-			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.setAttribute(side, "")));
+			if (data.moves.length) {
+				piece.el.setAttribute(side, "");
+				piece.el.style.setProperty("opacity", 0);
+				window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.style.setProperty("opacity", 1)));
+			} else
+				window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.setAttribute(side, "")));
 			piece.el.onclick = e => {
 				if (selectedCell)
 					return;
@@ -361,6 +369,7 @@ function setBoard(data) {
 								winner: "none",
 								board: predictedBoard.join(""),
 								cards: predictedCards,
+								indices: latestData.indices,
 							});
 						};
 
@@ -397,6 +406,7 @@ ws.onerror = initialiseMainPage;
 ws.onmessage = e => {
 	const data = JSON.parse(e.data);
 	console.log("recv", data);
+	let playerIndex = 1;
 	switch(data.messageType) {
 	case "state":
 		lastMatchId = data.matchId;
@@ -405,7 +415,7 @@ ws.onmessage = e => {
 		case "waiting for player":
 			if (localStorage["match-" + data.matchId] || spectateOnly) {
 				if (localStorage["match-" + data.matchId])
-					container.setAttribute("playable", localStorage["match-" + data.matchId][0] == "B" ? "blue" : "red");
+					container.setAttribute("playable", "");
 				container.setAttribute("waiting-opponent", "");
 			} else {
 				requestUsername();
@@ -413,6 +423,8 @@ ws.onmessage = e => {
 			}
 			joining = true;
 		case "in progress":
+			if (localStorage["match-" + data.matchId])
+					container.setAttribute("playable", data.indices.blue == parseInt(localStorage["match-" + data.matchId][0]) ? "blue" : "red");
 			if (joining)
 				break;
 			container.removeAttribute("waiting-opponent");
@@ -428,8 +440,9 @@ ws.onmessage = e => {
 	case "create":
 		copyToClipboard("https://git.io/onitama#" + data.matchId, "Copied invite link to clipboard");
 		ws.send("spectate " + data.matchId);
+		playerIndex = 0;
 	case "join":
-		localStorage["match-" + data.matchId] = (data.color == "red" ? "R" : "B") + data.token;
+		localStorage["match-" + data.matchId] = playerIndex + data.token;
 		if (window.location.hash.length < 1)
 			history.replaceState(undefined, undefined, window.location.pathname + "#" + data.matchId);
 		else
@@ -437,9 +450,9 @@ ws.onmessage = e => {
 		lastMatchId = data.matchId;
 		break;
 	case "error":
+		if (data.command == "spectate" && data.error == "Game ended")
+			return ws.send("state " + data.matchId);
 	default:
-		if (data.command == "heartbeat")
-			return;
 		console.error(data);
 		if (data.command == "state" || data.command == "subscribe") {
 			delete localStorage["match-" + match[1]];
