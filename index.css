@@ -174,11 +174,11 @@ game-piece {
 	position: absolute;
 	cursor: pointer;
 	z-index: 1;
+	background-color: lightgrey;
 }
 game-piece {
 	pointer-events: none;
-	opacity: 0;
-	transition: opacity ease-in-out .25s, left ease-out .25s, top ease-out .25s;
+	transition: opacity ease-in-out .25s, left ease-out .25s, top ease-out .25s, background-color ease-in-out .25s;
 }
 game-piece[deleting] {
 	pointer-events: none;
@@ -186,7 +186,7 @@ game-piece[deleting] {
 	z-index: 0;
 }
 game-board[flipped] game-ghost-piece,
-game-board[flipped] game-piece {
+game-board[flipped] > game-piece {
 	left: calc(4% + 20% * (4 - var(--x)));
 	top: calc(4% + 20% * (4 - var(--y)));
 }
@@ -204,6 +204,8 @@ game-ghost-piece::before {
 	width: 80%;
 	height: 80%;
 	border-radius: 50%;
+	background-color: lightgrey;
+	transition: background-color .25s ease-in-out;
 }
 game-piece::before {
 	content: "";
@@ -213,6 +215,8 @@ game-piece::before {
 	height: 80%;
 	border-radius: 50%;
 	margin: 10%;
+	background-color: grey;
+	transition: background-color .25s ease-in-out;
 }
 game-ghost-piece[master]::after,
 game-piece[master]::after {
@@ -229,7 +233,7 @@ game-ghost-piece[master]::after {
 	background-color: #C2C93C;
 }
 game-container[waiting-opponent] game-board::after {
-	content: "waiting for opponent...";
+	content: "waiting for second player...";
 	display: flex;
 	position: absolute;
 	background: #555c;
@@ -243,6 +247,9 @@ game-container[waiting-opponent] game-board::after {
 	padding: calc(.035 * var(--board-size));
 	color: white;
 	font-weight: 400;
+}
+game-container[waiting-opponent][playable] game-board::after {
+	content: "waiting for opponent...";
 }
 game-choice-overlay {
 	display: block;
@@ -260,6 +267,27 @@ game-choice-overlay {
 game-choice-overlay[visible] {
 	pointer-events: all;
 	opacity: 1;
+}
+board-blue-name,
+board-red-name {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+	font-size: calc(.045 * var(--board-size));
+	font-weight: 500;
+    transition: top .25s ease-in-out;
+}
+board-blue-name:empty,
+board-red-name:empty {
+	top: unset !important;
+}
+game-board:not([flipped]) board-red-name,
+game-board[flipped] board-blue-name {
+	top: calc(-5% - .045 * var(--board-size));
+}
+game-board:not([flipped]) board-blue-name,
+game-board[flipped] board-red-name {
+	top: 105%;
 }
 sidebar-container {
 	display: flex;

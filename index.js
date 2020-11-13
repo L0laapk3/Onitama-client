@@ -34,6 +34,15 @@ class Card {
 			this.el.removeAttribute("flipped");
 		this.flipped = flipped;
 	}
+	flipSet() {
+		for (let i = 0; i < 12; i++) {
+			const one = this.gridEl.children[i];
+			const two = this.gridEl.children[24 - i];
+			const onePossible = one.getAttribute("possible");
+			one.setAttribute("possible", two.getAttribute("possible"));
+			two.setAttribute("possible", onePossible);
+		}
+	}
 	set(name) {
 		const type = cards[name];
 		this.name = name;
@@ -58,6 +67,35 @@ const board = {
 	el: document.createElement("game-board"),
 	cells: [[], [], [], [], []]
 };
+for (let y = 0; y < 5; y++) {
+	const rowEl = document.createElement("game-board-row");
+	for (let x = 0; x < 5; x++) {
+		const cellEl = document.createElement("game-board-cell");
+		rowEl.append(cellEl);
+		board.cells[y][x] = {
+			el: cellEl,
+			piece: undefined,
+			x: x,
+			y: y,
+		};
+	}
+	board.el.append(rowEl);
+}
+const ghostsEl = document.createElement("board-ghosts");
+for (let x = 0; x < 5; x++)
+	for (let y = 0; y < 5; y += 4) {
+		const el = document.createElement("game-piece");
+		el.style.setProperty("--x", x);
+		el.style.setProperty("--y", y);
+		if (x == 2)
+			el.setAttribute("master", "");
+		ghostsEl.append(el);
+	}
+board.el.append(ghostsEl);
+const redNameEl = document.createElement("board-red-name");
+board.el.append(redNameEl);
+const blueNameEl = document.createElement("board-blue-name");
+board.el.append(blueNameEl);
 const container = document.getElementsByTagName("game-container")[0];
 const boardContainer = document.createElement("board-container");
 boardContainer.append(board.cards.top[0].el);
@@ -83,20 +121,6 @@ playingAs.append(clickToFlip);
 sidebarContainer.append(playingAs);
 container.append(sidebarContainer);
 container.append(boardContainer);
-for (let y = 0; y < 5; y++) {
-	const rowEl = document.createElement("game-board-row");
-	for (let x = 0; x < 5; x++) {
-		const cellEl = document.createElement("game-board-cell");
-		rowEl.append(cellEl);
-		board.cells[y][x] = {
-			el: cellEl,
-			piece: undefined,
-			x: x,
-			y: y,
-		};
-	}
-	board.el.append(rowEl);
-}
 
 
 let currentCards = [];
@@ -134,6 +158,8 @@ function setBoard(data) {
 	clearTimeout(lastPollTimer);
 	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
+	redNameEl.innerText = data.usernames.red;
+	blueNameEl.innerText = data.usernames.blue;
 	const participating = localStorage["match-" + data.matchId];
 	let flipped = participating && participating[0] == "B";
 	const token = participating && participating.substr(1);
@@ -179,6 +205,7 @@ function setBoard(data) {
 			fixFlip();
 			currentCards = data.currentTurn == "blue" ? board.cards.blue : board.cards.red;
 			board.cards.side.flip(((participating ? participating[0] == "B" : false) == (latestData.currentTurn == "red")) != inverted);
+			board.cards.side.flipSet();
 		};
 	}
 	latestData = data;
@@ -245,13 +272,12 @@ function setBoard(data) {
 			};
 			cell.piece = piece;
 			let side = type < 2 ? "blue" : "red";
-			piece.el.setAttribute(side, "");
 			if (type % 2 == 1)
 				piece.el.setAttribute("master", "");
 			piece.el.style.setProperty("--x", cell.x);
 			piece.el.style.setProperty("--y", cell.y);
 			board.el.append(piece.el);
-			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.style.setProperty("opacity", 1)));
+			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.setAttribute(side, "")));
 			piece.el.onclick = e => {
 				if (selectedCell)
 					return;
@@ -380,15 +406,16 @@ ws.onmessage = e => {
 				if (localStorage["match-" + data.matchId])
 					container.setAttribute("playable", localStorage["match-" + data.matchId][0] == "B" ? "blue" : "red");
 				container.setAttribute("waiting-opponent", "");
-			} else
-				ws.send("join " + data.matchId);
+			} else {
+				requestUsername();
+				ws.send("join " + data.matchId + " " + localStorage.username);
+			}
 			joining = true;
 		case "in progress":
 			if (joining)
 				break;
 			container.removeAttribute("waiting-opponent");
 		case "ended":
-			console.log(data.board, data.board.match(/.{1,5}/g))
 			data.board = data.board.match(/.{1,5}/g).map(x => x.split('').reverse().join('')).join('');
 			setBoard(data);
 			break;
@@ -447,13 +474,18 @@ if (match) {
 	ws.onopen = _ => initialiseMainPage();
 
 
+function requestUsername() {
+	while (!localStorage.username || !localStorage.username.length)
+		localStorage.username = prompt("enter an username");
+}
 function initialiseMainPage() {
 	removeHighlights();
 	if (lastMatchId) {
 		history.pushState(undefined, undefined, window.location.pathname);
 		window.location.reload();
 	}
-	ws.send("create");
+	requestUsername();
+	ws.send("create " + localStorage.username);
 }
 
 
