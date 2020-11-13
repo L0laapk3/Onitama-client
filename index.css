@@ -68,17 +68,19 @@ game-board {
 	background-color: grey;
 	transition: background-color .25s ease-in-out;
 }
-game-piece[blue] {
+game-container:not([winner="red"]) game-piece[blue] {
 	background-color: white;
 }
-game-piece[red] {
+game-container:not([winner="blue"]) game-piece[red] {
 	background-color: black;
 }
-game-piece[blue]::before,
+game-container:not([winner="red"]) game-piece[blue]::before,
+game-container[winner="blue"] game-board,
 game-board[turn="blue"] {
 	background-color: deepskyblue;
 }
-game-piece[red]::before,
+game-container:not([winner="blue"]) game-piece[red]::before,
+game-container[winner="red"] game-board,
 game-board[turn="red"] {
 	background-color: red;
 }
@@ -179,6 +181,10 @@ game-piece {
 game-piece {
 	pointer-events: none;
 	transition: opacity ease-in-out .25s, left ease-out .25s, top ease-out .25s, background-color ease-in-out .25s;
+}
+game-container[winner="blue"] game-piece[red][unmoved],
+game-container[winner="red"] game-piece[blue][unmoved] {
+	transition: left ease-out .25s, top ease-out .25s, background-color ease-in-out .25s;
 }
 game-piece[deleting] {
 	pointer-events: none;

@@ -165,7 +165,7 @@ function setBoard(data) {
 	}
 	const participating = localStorage["match-" + data.matchId];
 	const isBlue = participating && (parseInt(participating[0]) == data.indices.blue);
-	let flipped = participating && isBlue == data.indices.blue;
+	let flipped = participating && isBlue;
 	const token = participating && participating.substr(1);
 	if (data.gameState == "ended") {
 		container.removeAttribute("playable");
@@ -262,6 +262,7 @@ function setBoard(data) {
 			piece.y = toCell.y;
 			piece.el.style.setProperty("--x", toCell.x);
 			piece.el.style.setProperty("--y", toCell.y);
+			piece.el.removeAttribute("unmoved");
 			piece.el.setAttribute("moving", "");
 			setTimeout(_ => piece.el.removeAttribute("moving"));
 		}
@@ -283,6 +284,8 @@ function setBoard(data) {
 			board.el.append(piece.el);
 			if (data.moves.length) {
 				piece.el.setAttribute(side, "");
+				if ((side == "blue" ? 0 : 5) == cell.y)
+					piece.el.setAttribute("unmoved", "");
 				piece.el.style.setProperty("opacity", 0);
 				window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.style.setProperty("opacity", 1)));
 			} else
@@ -421,12 +424,10 @@ ws.onmessage = e => {
 				requestUsername();
 				ws.send("join " + data.matchId + " " + localStorage.username);
 			}
-			joining = true;
+			break;
 		case "in progress":
 			if (localStorage["match-" + data.matchId])
 					container.setAttribute("playable", data.indices.blue == parseInt(localStorage["match-" + data.matchId][0]) ? "blue" : "red");
-			if (joining)
-				break;
 			container.removeAttribute("waiting-opponent");
 		case "ended":
 			data.board = data.board.match(/.{1,5}/g).map(x => x.split('').reverse().join('')).join('');
@@ -454,7 +455,7 @@ ws.onmessage = e => {
 			return ws.send("state " + data.matchId);
 	default:
 		console.error(data);
-		if (data.command == "state" || data.command == "subscribe") {
+		if (data.command == "state" || data.command == "spectate") {
 			delete localStorage["match-" + match[1]];
 			initialiseMainPage();
 		}
