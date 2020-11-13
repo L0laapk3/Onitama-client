@@ -232,6 +232,13 @@ game-piece[master]::after {
 game-ghost-piece[master]::after {
 	background-color: #C2C93C;
 }
+game-container board-ghosts {
+	opacity: 1;
+	transition: opacity .25s ease-in-out;
+}
+game-container[ongoing] board-ghosts {
+	opacity: 0;
+}
 game-container[waiting-opponent] game-board::after {
 	content: "waiting for second player...";
 	display: flex;

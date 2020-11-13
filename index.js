@@ -158,6 +158,7 @@ function setBoard(data) {
 	clearTimeout(lastPollTimer);
 	//lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
 	removeHighlights();
+	container.setAttribute("ongoing", "");
 	redNameEl.innerText = data.usernames.red;
 	blueNameEl.innerText = data.usernames.blue;
 	const participating = localStorage["match-" + data.matchId];
