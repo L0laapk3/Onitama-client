@@ -251,7 +251,7 @@ game-container[waiting-opponent] game-board::after {
 	background: #555c;
 	width: calc(.4 * var(--board-size));
 	border-radius: calc(.04 * var(--board-size));
-	left: calc(50% - .185 * var(--board-size));
+	left: calc(50% - .235 * var(--board-size));
 	top: calc(50% - .09 * var(--board-size));
 	text-align: center;
 	font-size: calc(.04 * var(--board-size));
