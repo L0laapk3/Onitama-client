@@ -492,7 +492,7 @@ if (match) {
 
 function requestUsername() {
 	while (!localStorage.username || !localStorage.username.length)
-		localStorage.username = prompt("enter an username");
+		localStorage.username = prompt("enter a username");
 }
 function initialiseMainPage() {
 	removeHighlights();

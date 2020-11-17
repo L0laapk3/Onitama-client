@@ -298,11 +298,11 @@ board-red-name:empty {
 }
 game-board:not([flipped]) board-red-name,
 game-board[flipped] board-blue-name {
-	top: calc(-5% - .045 * var(--board-size));
+	top: 105%;
 }
 game-board:not([flipped]) board-blue-name,
 game-board[flipped] board-red-name {
-	top: 105%;
+	top: calc(-5% - .045 * var(--board-size));
 }
 sidebar-container {
 	display: flex;
