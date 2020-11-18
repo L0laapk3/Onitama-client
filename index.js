@@ -162,8 +162,12 @@ function setBoard(data) {
 	removeHighlights();
 	container.setAttribute("ongoing", "");
 	if (data.usernames) {
-		redNameEl.innerText = data.usernames.red;
-		blueNameEl.innerText = data.usernames.blue;
+		redNameEl.innerText = "";
+		blueNameEl.innerText = "";
+		window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => {
+			redNameEl.innerText = data.usernames.red;
+			blueNameEl.innerText = data.usernames.blue;
+		}));
 	}
 	const participating = localStorage["match-" + data.matchId];
 	const isBlue = participating && (parseInt(participating[0]) == data.indices.blue);
@@ -421,9 +425,11 @@ ws.onmessage = e => {
 			if (localStorage["match-" + data.matchId] || spectateOnly) {
 				container.setAttribute("waiting-opponent", "");
 				if (localStorage["match-" + data.matchId]) {
+					redNameEl.innerText = data.usernames.red;
 					container.setAttribute("playable", "");
 					copyToClipboard(data.matchId);
 				} else {
+					blueNameEl.innerText = data.usernames.blue;
 					waitingEl.onclick = e => {
 						ws.send("join " + data.matchId + " " + localStorage.username);
 					};
