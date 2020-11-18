@@ -167,7 +167,7 @@ function setBoard(data) {
 	}
 	const participating = localStorage["match-" + data.matchId];
 	const isBlue = participating && (parseInt(participating[0]) == data.indices.blue);
-	let flipped = participating && isBlue;
+	let flipped = participating ? isBlue : data.indices.blue;
 	const token = participating && participating.substr(1);
 	if (data.gameState == "ended") {
 		container.removeAttribute("playable");

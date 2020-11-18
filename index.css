@@ -267,7 +267,7 @@ game-container[waiting-opponent] game-board game-waiting {
 game-container[waiting-opponent] game-board game-waiting::before {
 	content: "waiting for second player... (click to join)";
 }
-game-container[waiting-opponent][playable] game-board game-waiting::after {
+game-container[waiting-opponent][playable] game-board game-waiting::before {
 	content: "waiting for opponent... (Click to copy invite)";
 }
 game-choice-overlay {
