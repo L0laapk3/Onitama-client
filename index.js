@@ -81,6 +81,8 @@ for (let y = 0; y < 5; y++) {
 	}
 	board.el.append(rowEl);
 }
+const waitingEl = document.createElement("game-waiting");
+board.el.appendChild(waitingEl);
 const ghostsEl = document.createElement("board-ghosts");
 for (let x = 0; x < 5; x++)
 	for (let y = 0; y < 5; y += 4) {
@@ -417,10 +419,15 @@ ws.onmessage = e => {
 		switch(data.gameState) {
 		case "waiting for player":
 			if (localStorage["match-" + data.matchId] || spectateOnly) {
-				if (localStorage["match-" + data.matchId])
-					container.setAttribute("playable", "");
 				container.setAttribute("waiting-opponent", "");
-				copyToClipboard(data.matchId);
+				if (localStorage["match-" + data.matchId]) {
+					container.setAttribute("playable", "");
+					copyToClipboard(data.matchId);
+				} else {
+					waitingEl.onclick = e => {
+						ws.send("join " + data.matchId + " " + localStorage.username);
+					};
+				}
 			} else {
 				requestUsername();
 				ws.send("join " + data.matchId + " " + localStorage.username);

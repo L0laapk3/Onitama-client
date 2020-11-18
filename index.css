@@ -244,9 +244,12 @@ game-container board-ghosts {
 game-container[ongoing] board-ghosts {
 	opacity: 0;
 }
-game-container[waiting-opponent] game-board::after {
-	content: "waiting for second player...";
+game-container game-board game-waiting {
+	display: none;
+}
+game-container[waiting-opponent] game-board game-waiting {
 	display: flex;
+	cursor: pointer;
 	position: absolute;
 	background: #555c;
 	width: calc(.4 * var(--board-size));
@@ -259,12 +262,13 @@ game-container[waiting-opponent] game-board::after {
 	padding: calc(.035 * var(--board-size));
 	color: white;
 	font-weight: 400;
+	z-index: 1;
 }
-game-container[waiting-opponent][playable] game-board::after {
+game-container[waiting-opponent] game-board game-waiting::before {
+	content: "waiting for second player... (click to join)";
+}
+game-container[waiting-opponent][playable] game-board game-waiting::after {
 	content: "waiting for opponent... (Click to copy invite)";
-}
-game-container[waiting-opponent][playable] {
-	cursor: pointer;
 }
 game-choice-overlay {
 	display: block;
