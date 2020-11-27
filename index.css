@@ -68,18 +68,18 @@ game-board {
 	background-color: grey;
 	transition: background-color .25s ease-in-out;
 }
-game-container:not([winner="red"]) game-piece[blue] {
+game-container[ongoing]:not([winner="red"]) game-piece[color="blue"] {
 	background-color: white;
 }
-game-container:not([winner="blue"]) game-piece[red] {
+game-container[ongoing]:not([winner="blue"]) game-piece[color="red"] {
 	background-color: black;
 }
-game-container:not([winner="red"]) game-piece[blue]::before,
+game-container[ongoing]:not([winner="red"]) game-piece[color="blue"]::before,
 game-container[winner="blue"] game-board,
 game-board[turn="blue"] {
 	background-color: deepskyblue;
 }
-game-container:not([winner="blue"]) game-piece[red]::before,
+game-container[ongoing]:not([winner="blue"]) game-piece[color="red"]::before,
 game-container[winner="red"] game-board,
 game-board[turn="red"] {
 	background-color: red;
@@ -165,6 +165,12 @@ game-board-row:last-of-type game-board-cell:nth-child(even)::before,
 game-board-row:nth-child(even)::after {
 	color: var(--dark-square);
 }
+board-pieces {
+	z-index: 0;
+}
+board-ghost-pieces {
+	z-index: 1;
+}
 game-ghost-piece,
 game-piece {
 	left: calc(4% + 20% * var(--x));
@@ -176,28 +182,24 @@ game-piece {
 	position: absolute;
 	cursor: pointer;
 	z-index: 1;
+	opacity: 1;
 	background-color: lightgrey;
-}
-game-piece {
 	pointer-events: none;
 	transition: opacity ease-in-out .25s, left ease-out .25s, top ease-out .25s, background-color ease-in-out .25s;
 }
-game-container[winner="blue"] game-piece[red][unmoved],
-game-container[winner="red"] game-piece[blue][unmoved] {
-	transition: left ease-out .25s, top ease-out .25s, background-color ease-in-out .25s;
-}
-game-piece[deleting] {
+game-piece[dead] {
 	pointer-events: none;
 	opacity: 0 !important;
 	z-index: 0;
 }
 game-board[flipped] game-ghost-piece,
-game-board[flipped] > game-piece {
+game-board[flipped] game-piece {
 	left: calc(4% + 20% * (4 - var(--x)));
 	top: calc(4% + 20% * (4 - var(--y)));
 }
-game-container[playable="blue"] game-board[turn="blue"] game-piece[blue],
-game-container[playable="red"] game-board[turn="red"] game-piece[red] {
+game-container[playable="blue"] game-board[turn="blue"] game-piece[color="blue"],
+game-container[playable="red"] game-board[turn="red"] game-piece[color="red"],
+game-ghost-piece {
 	pointer-events: all;
 }
 game-ghost-piece {
