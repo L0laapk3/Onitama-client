@@ -283,7 +283,7 @@ function setBoard(data) {
 			gameBoard.cards.bottom[1].set(topCards[1]);
 			fixFlip();
 			currentCards = data.currentTurn == "blue" ? gameBoard.cards.blue : gameBoard.cards.red;
-			gameBoard.cards.side.flip(((participating  && isBlue) == (latestData.currentTurn == "red")) != inverted);
+			gameBoard.cards.side.flip(((!participating && !!isBlue) != (data.currentTurn == "red")) != (inverted));
 			gameBoard.cards.side.flipSet();
 		};
 		for (let i = 0; i < 10; i++) {
@@ -408,7 +408,7 @@ function setBoard(data) {
 	latestData = data;
 	gameBoard.cards.blue[0].set(data.cards.blue[0]);
 	gameBoard.cards.blue[1].set(data.cards.blue[1]);
-	gameBoard.cards.side.flip(((participating && isBlue) == (data.currentTurn == "red")) != inverted);
+	gameBoard.cards.side.flip(((!participating && !!isBlue) != (data.currentTurn == "red")) != (inverted));
 	gameBoard.cards.side.set(data.cards.side);
 	gameBoard.cards.red[0].set(data.cards.red[0]);
 	gameBoard.cards.red[1].set(data.cards.red[1]);
