@@ -356,6 +356,12 @@ function setBoard(data) {
 							const pos = "edcba"[piece.x] + (piece.y+1) + "edcba"[x] + (y+1);
 							ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card.name + " " + pos);
 							let predictedBoard = latestData.board.split("");
+							let winner = "none";
+							console.log(predictedBoard[piece.x + 5 * piece.y], x + 5 * y);
+							if ((predictedBoard[x + 5 * y] == "2") || (predictedBoard[piece.x + 5 * piece.y] == "4" && x + 5 * y == 2))
+								winner = "red";
+							else if ((predictedBoard[x + 5 * y] == "4") || (predictedBoard[piece.x + 5 * piece.y] == "2" && x + 5 * y == 22))
+								winner = "blue";
 							predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
 							predictedBoard[piece.x + 5 * piece.y] = '0';
 							let predictedCards = latestData.cards;
@@ -363,12 +369,12 @@ function setBoard(data) {
 							predictedCards.side = latestData.cards[latestData.currentTurn][usableCards[cardChoice]];
 							predictedCards[latestData.currentTurn][usableCards[cardChoice]] = lastSideCard;
 							setBoard({
-								gameState: latestData.gameState,
+								gameState: winner == "none" ? latestData.gameState : "ended",
 								matchId: latestData.matchId,
 								currentTurn: latestData.currentTurn == "red" ? "blue" : "red",
 								startingCards: latestData.startingCards,
 								moves: latestData.moves.concat([card.name + ":" + pos]),
-								winner: "none",
+								winner: winner,
 								board: predictedBoard.join(""),
 								cards: predictedCards,
 								indices: latestData.indices,
@@ -424,187 +430,6 @@ function setBoard(data) {
 		pieces[i].el.style.setProperty("--x", pieces[i].x);
 		pieces[i].el.style.setProperty("--y", pieces[i].y);
 	}
-
-	// let newPieces = [[], [], [], []], i = 0, removedPieces = [[], [], [], []];
-	// for (let y = 0; y < 5; y++)
-	// 	for (let x = 0; x < 5; x++) {
-	// 		const p = parseInt(data.board[i]);
-	// 		const cell = gameBoard.cells[y][x];
-	// 		if (cell.piece && cell.piece.value != p)
-	// 			removedPieces[cell.piece.value - 1].push(cell);
-	// 		if (p && (!cell.piece || cell.piece.value != p))
-	// 			newPieces[p - 1].push(cell);
-	// 		i++;
-	// 	}
-	// if (lastboardstr == data.board) {
-	// 	for (let grp of [newPieces, removedPieces])
-	// 		for (let arr of grp)
-	// 			if (arr.length)
-	// 				throw Error("same board but new ops needed");
-	// }
-	// lastboardstr = data.board;
-	// for (let type = 0; type < 4; type++)
-	// 	for (let i = newPieces[type].length; i < removedPieces[type].length; i++) {
-	// 		// delete piece
-	// 		const cell = removedPieces[type][i];
-	// 		const piece = cell.piece;
-	// 		piece.remove = true;
-	// 		cell.piece.el.setAttribute("deleting", "");
-	// 		window.requestAnimationFrame(_ => setTimeout(_ => piece.el.remove(), 250));
-	// 		cell.piece = undefined;
-	// 	}
-	// for (let type = 0; type < 4; type++) {
-	// 	let i = 0;
-	// 	for (; i < Math.min(newPieces[type].length, removedPieces[type].length); i++) {
-	// 		// move piece
-	// 		const toCell = newPieces[type][i];
-	// 		const fromCell = removedPieces[type][i];
-	// 		const piece = fromCell.piece;
-	// 		toCell.piece = piece;
-	// 		fromCell.piece = undefined;
-	// 		piece.x = toCell.x;
-	// 		piece.y = toCell.y;
-	// 		piece.el.style.setProperty("--x", toCell.x);
-	// 		piece.el.style.setProperty("--y", toCell.y);
-	// 		piece.el.removeAttribute("unmoved");
-	// 		piece.el.setAttribute("moving", "");
-	// 		setTimeout(_ => piece.el.removeAttribute("moving"));
-	// 	}
-	// 	for (; i < newPieces[type].length; i++) {
-	// 		continue;
-	// 		// create piece
-	// 		const cell = newPieces[type][i];
-	// 		const piece = {
-	// 			el: document.createElement("game-piece"),
-	// 			value: type + 1,
-	// 			x: cell.x,
-	// 			y: cell.y,
-	// 		};
-	// 		cell.piece = piece;
-	// 		let side = type < 2 ? "blue" : "red";
-	// 		if (type % 2 == 1)
-	// 			piece.el.setAttribute("master", "");
-	// 		piece.el.style.setProperty("--x", cell.x);
-	// 		piece.el.style.setProperty("--y", cell.y);
-	// 		gameBoard.el.append(piece.el);
-	// 		if (data.moves.length) {
-	// 			piece.el.setAttribute(side, "");
-	// 			if ((side == "blue" ? 0 : 5) == cell.y)
-	// 				piece.el.setAttribute("unmoved", "");
-	// 			piece.el.style.setProperty("opacity", 0);
-	// 			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.style.setProperty("opacity", 1)));
-	// 		} else
-	// 			window.requestAnimationFrame(_ => window.requestAnimationFrame(_ => piece.el.setAttribute(side, "")));
-	// 		piece.el.onclick = e => {
-	// 			if (selectedCell)
-	// 				return;
-	// 			piece.el.onmouseenter();
-	// 			selectedCell = cell;
-	// 			e.stopPropagation();
-	// 		}
-	// 		piece.el.onmouseenter = _ => {
-	// 			if (selectedCell || piece.removed)
-	// 				return;
-	// 			removeHighlights();
-	// 			let allUsableCards = [];
-	// 			for (let i = 0; i < 25; i++) {
-	// 				const y = piece.y - Math.floor(i / 5) + 2;
-	// 				const x = piece.x + (i % 5) - 2;
-	// 				if (x < 0 || x >= 5 || y < 0 || y >= 5)
-	// 					continue;
-	// 				if (gameBoard.cells[y][x].piece && ((gameBoard.cells[y][x].piece.value <= 2) == (piece.value <= 2)))
-	// 					continue;
-	// 				let usableCards = [];
-	// 				for (let j = 0; j < currentCards.length; j++) {
-	// 					const card = currentCards[j];
-	// 					if (card.moves[((piece.value <= 2) != inverted) ? i : 24 - i] == '1') {
-	// 						usableCards.push(j);
-	// 						if (allUsableCards.indexOf(j) == -1)
-	// 							allUsableCards.push(j);
-	// 						card.el.setAttribute("highlighted", "");
-	// 						continue;
-	// 					}
-	// 				}
-	// 				if (!usableCards.length)
-	// 					continue;
-	// 				let highlightEl = document.createElement("game-ghost-piece");
-	// 				if (type % 2 == 1)
-	// 					highlightEl.setAttribute("master", "");
-	// 				highlightEl.style.setProperty("--x", x);
-	// 				highlightEl.style.setProperty("--y", y);
-	// 				gameBoard.el.append(highlightEl);
-	// 				highlights.push(highlightEl);
-	// 				highlightEl.onmouseover = _ => {
-	// 					for (let j of allUsableCards)
-	// 						if (usableCards.indexOf(j) == -1)
-	// 							currentCards[j].el.removeAttribute("highlighted");
-	// 						else {
-	// 							currentCards[j].el.setAttribute("highlighted-individual", "");
-	// 							currentCards[j].gridEl.children[(piece.value <= 2) != inverted ? i : 24 - i].setAttribute("highlighted", "");
-	// 						}
-	// 				};
-	// 				highlightEl.onmouseleave = _ => {
-	// 					if (cardChoiceOverlay.hasAttribute("visible"))
-	// 						return;
-	// 					for (let j of allUsableCards)
-	// 						currentCards[j].el.setAttribute("highlighted", "");
-	// 					for (let j of usableCards) {
-	// 						currentCards[j].el.removeAttribute("highlighted-individual");
-	// 						currentCards[j].gridEl.children[(piece.value <= 2) != inverted ? i : 24 - i].removeAttribute("highlighted");
-	// 					}
-	// 				};
-	// 				highlightEl.onclick = _ => {
-	// 					if (piece.removed)
-	// 						return;
-							
-	// 					const submitMove = cardChoice => {
-	// 						const card = currentCards[usableCards[cardChoice]];
-	// 						const pos = "edcba"[piece.x] + (piece.y+1) + "edcba"[x] + (y+1);
-	// 						ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card.name + " " + pos);
-	// 						let predictedBoard = latestData.board.split("");
-	// 						predictedBoard[x + 5 * y] = predictedBoard[piece.x + 5 * piece.y];
-	// 						predictedBoard[piece.x + 5 * piece.y] = '0';
-	// 						let predictedCards = latestData.cards;
-	// 						let lastSideCard = latestData.cards.side;
-	// 						predictedCards.side = latestData.cards[latestData.currentTurn][usableCards[cardChoice]];
-	// 						predictedCards[latestData.currentTurn][usableCards[cardChoice]] = lastSideCard;
-	// 						setBoard({
-	// 							gameState: latestData.gameState,
-	// 							matchId: latestData.matchId,
-	// 							currentTurn: latestData.currentTurn == "red" ? "blue" : "red",
-	// 							startingCards: latestData.startingCards,
-	// 							moves: latestData.moves.concat([card.name + ":" + pos]),
-	// 							winner: "none",
-	// 							board: predictedBoard.join(""),
-	// 							cards: predictedCards,
-	// 							indices: latestData.indices,
-	// 						});
-	// 					};
-
-	// 					selectedCell = undefined;
-	// 					if (usableCards.length > 1) {
-	// 						cardChoiceOverlay.setAttribute("visible", "");
-	// 						for (let j of usableCards) {
-	// 							const card = currentCards[j];
-	// 							card.el.onclick = _ => {
-	// 								for (let j of usableCards)
-	// 									currentCards[j].el.onclick = undefined;
-	// 								cardChoiceOverlay.removeAttribute("visible");
-	// 								submitMove(j);
-	// 							};
-	// 						}
-	// 						for (let highlight of highlights)
-	// 							if (highlight != highlightEl)
-	// 								highlight.remove();
-	// 						highlights = [highlightEl];
-	// 					} else
-	// 						submitMove(0);
-	// 				};
-	// 			}
-	// 		};
-	// 		piece.el.onmouseleave = removeHighlights;
-	// 	}
-	// }
 }
 
 
