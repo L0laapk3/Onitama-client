@@ -7,6 +7,12 @@ window.onresize = _ => {
 	// We execute the same script as before
 	let vh = window.innerHeight * 0.01;
 	document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+	let scrollbox = document.createElement('div');
+    scrollbox.style.overflow = 'scroll';
+    document.body.appendChild(scrollbox);
+    document.documentElement.style.setProperty('--scroll-bar-size', scrollbox.offsetWidth - scrollbox.clientWidth + "px");
+    document.body.removeChild(scrollbox);
 };
 window.onresize();
 
