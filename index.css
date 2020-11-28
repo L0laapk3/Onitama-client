@@ -63,8 +63,8 @@ body {
 		max-height: 0;
 	}
 	move-list-row {
-		font-size: calc(.045 * var(--board-size)) !important;
-		line-height: calc(.07 * var(--board-size)) !important;
+		font-size: calc(.051 * var(--board-size)) !important;
+		line-height: calc(.09 * var(--board-size)) !important;
 	}
 }
 @media (max-aspect-ratio: 147/272) {
@@ -603,16 +603,16 @@ input[type=checkbox] {
 	display: none;
 }
 move-list > label {
-	height: calc(.08 * var(--board-size));
+	height: calc(.09 * var(--board-size));
 	cursor: pointer;
 	width: 100%;
 	display: none;
 }
 move-list > label::before {
 	content: "";
-	border-right: calc(.03 * var(--board-size)) solid transparent;
-	border-left: calc(.03 * var(--board-size)) solid transparent;
-	border-bottom: calc(.03 * var(--board-size)) solid grey;
+	border-right: calc(.035 * var(--board-size)) solid transparent;
+	border-left: calc(.035 * var(--board-size)) solid transparent;
+	border-bottom: calc(.035 * var(--board-size)) solid grey;
 	display: flex;
 	margin: auto;
 	transform: scaleY(1);
