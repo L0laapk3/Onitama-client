@@ -57,7 +57,7 @@ body {
 	}
 	move-list-scroll {
 		transition: max-height .25s ease-in-out;
-		max-height: 50vh;
+		max-height: 40vh;
 	}
 	move-list > input[type=checkbox]:not(:checked) ~ move-list-scroll {
 		max-height: 0;
