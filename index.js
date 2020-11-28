@@ -144,13 +144,33 @@ const playingAs = document.createElement("sidebar-playing-as");
 const clickToFlip = document.createElement("sidebar-clickToFlip");
 playingAs.append(clickToFlip);
 sidebarContainer.append(playingAs);
+const moveListContainer = document.createElement("move-list-container");
+const moveList = document.createElement("move-list");
+const moveListScroll = document.createElement("move-list-scroll");
+moveList.append(moveListScroll);
+moveListContainer.append(moveList);
 container.append(sidebarContainer);
 container.append(boardContainer);
+container.append(moveListContainer);
 
-function getBoardAtPly(ply) {
+moveListScroll.onclick = e => {
+	if (e.target.tagName == "MOVE-LIST-MOVE") {
+		selectPly(parseInt(e.target.getAttribute("ply"))+1, false);
+	}
+};
+
+let participating;
+let selectedPly;
+let selectedPlyI;
+function getBoardAtPly(ply, updateMoveList) {
+	selectedPlyI = ply;
 	piecesZ = new Array(10).fill(0);
 	lastPositions = new Array(10);
 	board = JSON.parse(JSON.stringify(startBoard));
+	if (updateMoveList)
+		moveListScroll.innerHTML = "";
+	else if (selectedPly)
+		selectedPly.removeAttribute("selected");
 	for (let i = 0; i < ply; i++) {
 		const match = moves[i].match(/([^:]+):([a-e])([1-5])([a-e])([1-5])/);
 		const cardI = board.cards[board.turn].findIndex(c => c == match[1]);
@@ -164,7 +184,91 @@ function getBoardAtPly(ply) {
 		board.pieces[targetI] = board.pieces[sourceI];
 		board.pieces[sourceI] = -1;
 		board.turn = board.turn == "blue" ? "red" : "blue";
+		if (updateMoveList) {
+			const itemEl = document.createElement("move-list-move");
+			itemEl.innerText = ":";
+			itemEl.setAttribute("card", match[1].substr(0, 4));
+			itemEl.setAttribute("move", match[2] + match[3] + match[4] + match[5]);
+			itemEl.setAttribute("ply", i);
+			if (i % 2 == 0) {
+				const rowEl = document.createElement("move-list-row");
+				rowEl.setAttribute("turn", Math.floor(i / 2) + 1);
+				rowEl.append(itemEl);
+				moveListScroll.prepend(rowEl);
+			} else {
+				moveListScroll.firstChild.append(itemEl);
+			}
+			selectedPly = itemEl;
+		}
 	}
+	if (!updateMoveList)
+		selectedPly = moveListScroll.querySelector('move-list-move[ply="' + (ply-1) + '"]');
+	if (selectedPly)
+		selectedPly.setAttribute("selected", "");
+}
+
+function selectPly(ply, updateMoveList) {
+	
+	getBoardAtPly(ply, updateMoveList);
+	const piecesPositions = new Array(10).fill(-1);
+	for (let i = 0; i < 25; i++)
+		if (board.pieces[i] >= 0)
+			piecesPositions[board.pieces[i]] = i;
+
+	const isBlue = participating && (parseInt(participating[0]) == latestData.indices.blue);
+	gameBoard.cards.blue[0].set(board.cards.blue[0]);
+	gameBoard.cards.blue[1].set(board.cards.blue[1]);
+	gameBoard.cards.side.flip(((!participating && !!isBlue) != (board.turn == "red")) != (inverted));
+	gameBoard.cards.side.set(board.cards.side);
+	gameBoard.cards.red[0].set(board.cards.red[0]);
+	gameBoard.cards.red[1].set(board.cards.red[1]);
+	currentCards = board.turn == "blue" ? gameBoard.cards.blue : gameBoard.cards.red;
+
+	for (let i = 0; i < 10; i++) {
+		let position;
+		if (piecesPositions[i] == -1) {
+			pieces[i].el.setAttribute("dead", "");
+			position = lastPositions[i];
+		} else {
+			pieces[i].el.removeAttribute("dead", "");
+			position = piecesPositions[i];
+		}
+		pieces[i].el.style.setProperty("z-index", piecesZ[i]);
+		pieces[i].x = 4 - position % 5;
+		pieces[i].y = Math.floor(position / 5);
+		pieces[i].el.style.setProperty("--x", pieces[i].x);
+		pieces[i].el.style.setProperty("--y", pieces[i].y);
+	}
+	
+	gameBoard.el.setAttribute("turn", board.turn);
+	
+	if (selectedPlyI == moves.length)
+		gameBoard.el.removeAttribute("history");
+	else
+		gameBoard.el.setAttribute("history", "");
+	if (selectedPly) {
+		const scrollHeight = selectedPly.offsetTop - moveListScroll.offsetTop - moveListScroll.scrollTop;
+		const containerHeight = moveListScroll.offsetHeight - selectedPly.offsetHeight;
+		if (scrollHeight < -1)
+			selectedPly.scrollIntoView(true);
+		else if (scrollHeight + 1 > containerHeight)
+			selectedPly.scrollIntoView(false);
+	}
+}
+window.onkeydown = e => {
+	let incr;
+	if (e.key == "ArrowLeft")
+		incr = -1;
+	else if (e.key == "ArrowRight")
+		incr = 1;
+	else
+		return;
+	const newPly = selectedPlyI + incr;
+	if (newPly < 0 || newPly > moves.length)
+		return;
+	selectedPiece = undefined;
+	removeHighlights();
+	selectPly(newPly, false);
 }
 
 
@@ -203,11 +307,6 @@ function setBoard(data) {
 	moves = data.moves;
 	startBoard.cards = data.startingCards;
 	startBoard.turn = CARDS.base.find(c => c.name == data.startingCards.side).color;
-	getBoardAtPly(data.moves.length);
-	const piecesPositions = new Array(10).fill(-1);
-	for (let i = 0; i < 25; i++)
-		if (board.pieces[i] >= 0)
-			piecesPositions[board.pieces[i]] = i;
 
 	clearTimeout(lastPollTimer);
 	// lastPollTimer = setTimeout(_ => ws.send("state " + latestData.matchId), 5000);
@@ -221,7 +320,7 @@ function setBoard(data) {
 			blueNameEl.innerText = data.usernames.blue;
 		}));
 	}
-	const participating = localStorage["match-" + data.matchId];
+	participating = localStorage["match-" + data.matchId];
 	const isBlue = participating && (parseInt(participating[0]) == data.indices.blue);
 	let flipped = participating ? isBlue : data.indices.blue;
 	const token = participating && participating.substr(1);
@@ -235,7 +334,6 @@ function setBoard(data) {
 			container.setAttribute("playable", isBlue ? "blue" : "red");
 		else
 			container.removeAttribute("playable");
-		gameBoard.el.setAttribute("turn", data.currentTurn);
 	}
 	if (!latestData) {
 		const fixFlip = _ => {
@@ -289,6 +387,8 @@ function setBoard(data) {
 		for (let i = 0; i < 10; i++) {
 			const piece = pieces[i];
 			piece.el.onclick = e => {
+				if (selectedPlyI != moves.length)
+					return;
 				if (selectedPiece)
 					return;
 				piece.el.onmouseenter();
@@ -296,6 +396,8 @@ function setBoard(data) {
 				e.stopPropagation();
 			}
 			piece.el.onmouseenter = _ => {
+				if (selectedPlyI != moves.length)
+					return;
 				if (selectedPiece || piece.el.hasAttribute("dead"))
 					return;
 				removeHighlights();
@@ -328,6 +430,9 @@ function setBoard(data) {
 					ghostPiecesEl.append(highlightEl);
 					highlights.push(highlightEl);
 					highlightEl.onmouseover = _ => {
+						console.log(selectedPlyI, moves.length);
+						if (selectedPlyI != moves.length)
+							return;
 						for (let j of allUsableCards)
 							if (usableCards.indexOf(j) == -1)
 								currentCards[j].el.removeAttribute("highlighted");
@@ -347,17 +452,17 @@ function setBoard(data) {
 						}
 					};
 					highlightEl.onclick = _ => {
+						if (selectedPlyI != moves.length)
+							return;
 						if (piece.removed)
 							return;
 							
 						const submitMove = cardChoice => {
 							const card = currentCards[usableCards[cardChoice]];
-							console.log(piece.x, piece.y, x, y);
 							const pos = "edcba"[piece.x] + (piece.y+1) + "edcba"[x] + (y+1);
 							ws.send("move " + latestData.matchId + " " + localStorage["match-" + latestData.matchId].substr(1) + " " + card.name + " " + pos);
 							let predictedBoard = latestData.board.split("");
 							let winner = "none";
-							console.log(predictedBoard[piece.x + 5 * piece.y], x + 5 * y);
 							if ((predictedBoard[x + 5 * y] == "2") || (predictedBoard[piece.x + 5 * piece.y] == "4" && x + 5 * y == 2))
 								winner = "red";
 							else if ((predictedBoard[x + 5 * y] == "4") || (predictedBoard[piece.x + 5 * piece.y] == "2" && x + 5 * y == 22))
@@ -405,31 +510,10 @@ function setBoard(data) {
 			piece.el.onmouseleave = removeHighlights;
 		}
 	}
-	latestData = data;
-	gameBoard.cards.blue[0].set(data.cards.blue[0]);
-	gameBoard.cards.blue[1].set(data.cards.blue[1]);
-	gameBoard.cards.side.flip(((!participating && !!isBlue) != (data.currentTurn == "red")) != (inverted));
-	gameBoard.cards.side.set(data.cards.side);
-	gameBoard.cards.red[0].set(data.cards.red[0]);
-	gameBoard.cards.red[1].set(data.cards.red[1]);
-	currentCards = data.currentTurn == "blue" ? gameBoard.cards.blue : gameBoard.cards.red;
 
-	
-	for (let i = 0; i < 10; i++) {
-		let position;
-		if (piecesPositions[i] == -1) {
-			pieces[i].el.setAttribute("dead", "");
-			position = lastPositions[i];
-		} else {
-			pieces[i].el.removeAttribute("dead", "");
-			position = piecesPositions[i];
-		}
-		pieces[i].el.style.setProperty("z-index", piecesZ[i]);
-		pieces[i].x = 4 - position % 5;
-		pieces[i].y = Math.floor(position / 5);
-		pieces[i].el.style.setProperty("--x", pieces[i].x);
-		pieces[i].el.style.setProperty("--y", pieces[i].y);
-	}
+	latestData = data;
+
+	selectPly(data.moves.length, true);
 }
 
 
