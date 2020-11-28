@@ -483,6 +483,7 @@ toast-notification {
 	opacity: 0;
 	transition: opacity .5s ease-in-out;
 	user-select: none;
+	pointer-events: none;
 }
 toast-notification[visible] {
 	opacity: 1;
