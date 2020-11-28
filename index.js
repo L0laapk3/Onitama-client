@@ -218,7 +218,7 @@ function selectPly(ply, updateMoveList) {
 	const isBlue = participating && (parseInt(participating[0]) == latestData.indices.blue);
 	gameBoard.cards.blue[0].set(board.cards.blue[0]);
 	gameBoard.cards.blue[1].set(board.cards.blue[1]);
-	gameBoard.cards.side.flip(((!participating && !!isBlue) != (board.turn == "red")) != (inverted));
+	gameBoard.cards.side.flip(((!participating || !isBlue) != (board.turn == "red")) != (inverted));
 	gameBoard.cards.side.set(board.cards.side);
 	gameBoard.cards.red[0].set(board.cards.red[0]);
 	gameBoard.cards.red[1].set(board.cards.red[1]);
@@ -381,7 +381,7 @@ function setBoard(data) {
 			gameBoard.cards.bottom[1].set(topCards[1]);
 			fixFlip();
 			currentCards = data.currentTurn == "blue" ? gameBoard.cards.blue : gameBoard.cards.red;
-			gameBoard.cards.side.flip(((!participating && !!isBlue) != (data.currentTurn == "red")) != (inverted));
+			gameBoard.cards.side.flip(((!participating || !isBlue) != (board.turn == "red")) != (inverted));
 			gameBoard.cards.side.flipSet();
 		};
 		for (let i = 0; i < 10; i++) {

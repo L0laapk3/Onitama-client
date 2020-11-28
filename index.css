@@ -68,18 +68,22 @@ game-board {
 	background-color: grey;
 	transition: background-color .25s ease-in-out;
 }
-game-container[ongoing]:not([winner="red"]) game-piece[color="blue"] {
+game-container[ongoing]:not([winner="red"]) game-piece[color="blue"],
+game-board[history] game-piece[color="blue"] {
 	background-color: white;
 }
-game-container[ongoing]:not([winner="blue"]) game-piece[color="red"] {
+game-container[ongoing]:not([winner="blue"]) game-piece[color="red"],
+game-board[history] game-piece[color="red"] {
 	background-color: black;
 }
 game-container[ongoing]:not([winner="red"]) game-piece[color="blue"]::before,
+game-board[history] game-piece[color="blue"]::before,
 game-container[winner="blue"] game-board,
 game-board[turn="blue"] {
 	background-color: deepskyblue;
 }
 game-container[ongoing]:not([winner="blue"]) game-piece[color="red"]::before,
+game-board[history] game-piece[color="red"]::before,
 game-container[winner="red"] game-board,
 game-board[turn="red"] {
 	background-color: red;
