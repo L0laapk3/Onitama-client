@@ -175,14 +175,14 @@ function getBoardAtPly(ply, updateMoveList) {
 		const doMove = i < ply;
 		const match = moves[i].match(/([^:]+):([a-e])([1-5])([a-e])([1-5])/);
 		const cardI = board.cards[board.turn].findIndex(c => c == match[1]);
-		board.cards[board.turn][cardI] = board.cards.side;
-		board.cards.side = match[1];
 		const sourceI = "abcde".indexOf(match[2])+parseInt(match[3])*5-5;
 		const targetI = "abcde".indexOf(match[4])+parseInt(match[5])*5-5;
-		if (board.pieces[targetI] != -1 && doMove)
-			lastPositions[board.pieces[targetI]] = targetI;
 		piecesZ[board.pieces[sourceI]] = i + 1;
 		if (doMove) {
+			if (board.pieces[targetI] != -1)
+				lastPositions[board.pieces[targetI]] = targetI;
+			board.cards[board.turn][cardI] = board.cards.side;
+			board.cards.side = match[1];
 			board.pieces[targetI] = board.pieces[sourceI];
 			board.pieces[sourceI] = -1;
 			board.turn = board.turn == "blue" ? "red" : "blue";
