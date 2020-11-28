@@ -557,6 +557,7 @@ move-list-move::after {
 move-list-move:nth-child(2) {
 	border-right: none;
 }
-move-list-move[selected] {
+move-list-move[selected]::before,
+move-list-move[selected]::after {
 	font-weight: bold;
 }
