@@ -12,12 +12,12 @@ body {
 	display: block;
 	font-family: clear sans, helvetica neue, Arial, sans-serif;
 }
-@media (max-aspect-ratio: 14/16) {
+@media (max-aspect-ratio: 2800/2448) {
 	body {
 		--board-size: calc(46 * var(--vh, 1vh));
 	}
 	game-container {
-		max-width: calc(1.06 * var(--board-size)) !important;
+		max-width: calc(1.53 * var(--board-size)) !important;
 		max-height: 100%;
 		flex-wrap: wrap;
 		align-items: initial !important;
@@ -31,6 +31,40 @@ body {
 	}
 	sidebar-container game-card {
 		margin: 0 calc(.05 * var(--board-size)) !important;
+	}
+}
+@media (max-aspect-ratio: 12/16) {
+	game-container {
+		width: calc(1.06 * var(--board-size)) !important;
+	}
+	move-list-container {
+		position: absolute;
+		width: 100vw;
+		/* top: calc(100% - 20px); */
+		height: max-content !important;
+		left: 0;
+		bottom: calc(-.01 * var(--board-size) - 1px);
+	}
+	move-list {
+		margin: 0 !important;
+		width: 100% !important;
+		border-radius: 0 !important;
+		border-left-width: 0 !important;
+		border-right-width: 0 !important;
+	}
+	move-list > label {
+		display: flex !important;
+	}
+	move-list-scroll {
+		transition: max-height .25s ease-in-out;
+		max-height: 50vh;
+	}
+	move-list > input[type=checkbox]:not(:checked) ~ move-list-scroll {
+		max-height: 0;
+	}
+	move-list-row {
+		font-size: calc(.045 * var(--board-size)) !important;
+		line-height: calc(.07 * var(--board-size)) !important;
 	}
 }
 @media (max-aspect-ratio: 147/272) {
@@ -507,17 +541,20 @@ move-list-scroll {
 	overflow-x: hidden;
 	height: 100%;
 	--scroll-bar-size: 17px;
-    width: calc(.35 * var(--board-size) + var(--scroll-bar-size));
+    width: calc(100% + var(--scroll-bar-size));
 }
 move-list-scroll::before {
 	content: "";
 	margin-top: auto;
 }
+move-list > label,
 move-list-row {
     width: 100%;
 	font-size: calc(.0255 * var(--board-size));
-	line-height: calc(.045 * var(--board-size));
 	border-bottom: solid 1px grey;
+}
+move-list-row {
+	line-height: calc(.045 * var(--board-size));
 	display: flex;
 }
 move-list-row:first-child {
@@ -561,4 +598,26 @@ move-list-move:nth-child(2) {
 move-list-move[selected]::before,
 move-list-move[selected]::after {
 	font-weight: bold;
+}
+input[type=checkbox] {
+	display: none;
+}
+move-list > label {
+	height: calc(.08 * var(--board-size));
+	cursor: pointer;
+	width: 100%;
+	display: none;
+}
+move-list > label::before {
+	content: "";
+	border-right: calc(.03 * var(--board-size)) solid transparent;
+	border-left: calc(.03 * var(--board-size)) solid transparent;
+	border-bottom: calc(.03 * var(--board-size)) solid grey;
+	display: flex;
+	margin: auto;
+	transform: scaleY(1);
+	transition: transform .25s ease-in-out;
+}
+move-list > input[type=checkbox]:checked + label::before {
+	transform: scaleY(-1);
 }
