@@ -78,13 +78,13 @@ game-board[history] game-piece[color="red"] {
 }
 game-container[ongoing]:not([winner="red"]) game-piece[color="blue"]::before,
 game-board[history] game-piece[color="blue"]::before,
-game-container[winner="blue"] game-board,
+game-container[winner="blue"] game-board:not([history]),
 game-board[turn="blue"] {
 	background-color: deepskyblue;
 }
 game-container[ongoing]:not([winner="blue"]) game-piece[color="red"]::before,
 game-board[history] game-piece[color="red"]::before,
-game-container[winner="red"] game-board,
+game-container[winner="red"] game-board:not([history]),
 game-board[turn="red"] {
 	background-color: red;
 }

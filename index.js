@@ -171,34 +171,37 @@ function getBoardAtPly(ply, updateMoveList) {
 		moveListScroll.innerHTML = "";
 	else if (selectedPly)
 		selectedPly.removeAttribute("selected");
-	for (let i = 0; i < ply; i++) {
+	for (let i = 0; i < Math.min(ply + 1, moves.length); i++) {
+		const doMove = i < ply;
 		const match = moves[i].match(/([^:]+):([a-e])([1-5])([a-e])([1-5])/);
 		const cardI = board.cards[board.turn].findIndex(c => c == match[1]);
 		board.cards[board.turn][cardI] = board.cards.side;
 		board.cards.side = match[1];
 		const sourceI = "abcde".indexOf(match[2])+parseInt(match[3])*5-5;
 		const targetI = "abcde".indexOf(match[4])+parseInt(match[5])*5-5;
-		if (board.pieces[targetI] != -1)
+		if (board.pieces[targetI] != -1 && doMove)
 			lastPositions[board.pieces[targetI]] = targetI;
 		piecesZ[board.pieces[sourceI]] = i + 1;
-		board.pieces[targetI] = board.pieces[sourceI];
-		board.pieces[sourceI] = -1;
-		board.turn = board.turn == "blue" ? "red" : "blue";
-		if (updateMoveList) {
-			const itemEl = document.createElement("move-list-move");
-			itemEl.innerText = ":";
-			itemEl.setAttribute("card", match[1].substr(0, 4));
-			itemEl.setAttribute("move", match[2] + match[3] + match[4] + match[5]);
-			itemEl.setAttribute("ply", i);
-			if (i % 2 == 0) {
-				const rowEl = document.createElement("move-list-row");
-				rowEl.setAttribute("turn", Math.floor(i / 2) + 1);
-				rowEl.append(itemEl);
-				moveListScroll.prepend(rowEl);
-			} else {
-				moveListScroll.firstChild.append(itemEl);
+		if (doMove) {
+			board.pieces[targetI] = board.pieces[sourceI];
+			board.pieces[sourceI] = -1;
+			board.turn = board.turn == "blue" ? "red" : "blue";
+			if (updateMoveList) {
+				const itemEl = document.createElement("move-list-move");
+				itemEl.innerText = ":";
+				itemEl.setAttribute("card", match[1].substr(0, 4));
+				itemEl.setAttribute("move", match[2] + match[3] + match[4] + match[5]);
+				itemEl.setAttribute("ply", i);
+				if (i % 2 == 0) {
+					const rowEl = document.createElement("move-list-row");
+					rowEl.setAttribute("turn", Math.floor(i / 2) + 1);
+					rowEl.append(itemEl);
+					moveListScroll.prepend(rowEl);
+				} else {
+					moveListScroll.firstChild.append(itemEl);
+				}
+				selectedPly = itemEl;
 			}
-			selectedPly = itemEl;
 		}
 	}
 	if (!updateMoveList)
