@@ -271,14 +271,7 @@ function selectPly(ply, updateMoveList) {
 			selectedPly.scrollIntoView(false);
 	}
 }
-window.onkeydown = e => {
-	let incr;
-	if (e.key == "ArrowLeft")
-		incr = -1;
-	else if (e.key == "ArrowRight")
-		incr = 1;
-	else
-		return;
+function keyStepPly(incr) {
 	const newPly = selectedPlyI + incr;
 	if (newPly < 0 || newPly > moves.length)
 		return;
@@ -286,6 +279,20 @@ window.onkeydown = e => {
 	removeHighlights();
 	selectPly(newPly, false);
 }
+window.onkeydown = e => {
+	if (e.key == "ArrowLeft")
+		keyStepPly(-1);
+	else if (e.key == "ArrowRight")
+		keyStepPly(1);
+};
+window.onmouseup = e => {
+	if (e.button == 3)
+		keyStepPly(-1);
+	else if (e.button == 4)
+		keyStepPly(1);
+	else return;
+	e.preventDefault();
+};
 
 
 let currentCards = [];
