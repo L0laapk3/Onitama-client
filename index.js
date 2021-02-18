@@ -136,6 +136,8 @@ const cardChoiceOverlay = document.createElement("game-choice-overlay");
 cardChoiceOverlay.onclick = _ => {
 	cardChoiceOverlay.removeAttribute("visible");
 	selectedPiece = undefined;
+	for (const card of currentCards)
+		card.el.onclick = undefined;
 	removeHighlights();
 };
 boardContainer.append(cardChoiceOverlay);
