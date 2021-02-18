@@ -303,6 +303,9 @@ window.onmousewheel = e => {
 		keyStepPly(-1);
 	else if (e.deltaY < 0)
 		keyStepPly(1);
+	else
+		return;
+	e.preventDefault();
 };
 
 
