@@ -299,13 +299,16 @@ window.onkeydown = e => {
 		keyStepPly(1);
 };
 window.onmousewheel = e => {
-	if (e.deltaY > 0)
-		keyStepPly(-1);
-	else if (e.deltaY < 0)
-		keyStepPly(1);
-	else
-		return;
-	e.preventDefault();
+	if (!moveList.contains(e.target)) {
+		if (e.deltaY > 0)
+			keyStepPly(-1);
+		else if (e.deltaY < 0)
+			keyStepPly(1);
+		else
+			return;
+		e.preventDefault();
+		return false;
+	}
 };
 
 
