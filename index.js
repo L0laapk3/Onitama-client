@@ -303,8 +303,6 @@ window.onmousewheel = e => {
 		keyStepPly(-1);
 	else if (e.deltaY < 0)
 		keyStepPly(1);
-	else return;
-	e.preventDefault();
 };
 
 
@@ -549,7 +547,10 @@ function setBoard(data) {
 
 	latestData = data;
 
+	const selectCorrectply = selectedPlyI < moves.length - 1 ? selectedPlyI : undefined;
 	selectPly(data.moves.length, true);
+	if (selectCorrectply !== undefined)
+		selectPly(selectCorrectply, false);
 }
 
 
@@ -563,7 +564,6 @@ ws.onmessage = e => {
 	switch(data.messageType) {
 	case "state":
 		lastMatchId = data.matchId;
-		let joining = false;
 		switch(data.gameState) {
 		case "waiting for player":
 			if (localStorage["match-" + data.matchId] || spectateOnly) {
