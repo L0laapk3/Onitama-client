@@ -51,9 +51,13 @@ body {
 		border-radius: 0 !important;
 		border-left-width: 0 !important;
 		border-right-width: 0 !important;
+		flex-wrap: wrap;
 	}
+	sidebar-step-back,
+	sidebar-step-forward,
 	move-list > label {
 		display: flex !important;
+		flex: 1 0 30%;
 	}
 	move-list-scroll {
 		transition: max-height .25s ease-in-out;
@@ -532,7 +536,7 @@ move-list {
     margin: calc(.45 * var(--board-size)) 0;
     flex: 1;
     overflow: hidden;
-	display: block;
+	display: flex;
 }
 move-list-scroll {
     display: flex;
@@ -540,17 +544,23 @@ move-list-scroll {
     overflow-y: scroll;
 	overflow-x: hidden;
 	height: 100%;
-    width: calc(100% + var(--scroll-bar-size));
+    flex: 0 0 calc(100% + var(--scroll-bar-size));
 }
 move-list-scroll::before {
 	content: "";
 	margin-top: auto;
 }
+sidebar-step-back,
+sidebar-step-forward,
 move-list > label,
 move-list-row {
-    width: 100%;
 	font-size: calc(.0255 * var(--board-size));
 	border-bottom: solid 1px grey;
+}
+move-list > label {
+	border-left: solid 1px grey;
+	border-right: solid 1px grey;
+	flex: 3 0 0 !important;
 }
 move-list-row {
 	line-height: calc(.045 * var(--board-size));
@@ -601,11 +611,26 @@ move-list-move[selected]::after {
 input[type=checkbox] {
 	display: none;
 }
+sidebar-step-back,
+sidebar-step-forward,
 move-list > label {
-	height: calc(.09 * var(--board-size));
+	height: calc(.11 * var(--board-size));
 	cursor: pointer;
-	width: 100%;
+	flex: 2 0 0;
 	display: none;
+	margin-top: -1px;
+}
+move-list > sidebar-step-forward::before,
+move-list > sidebar-step-back::before {
+	content: "";
+	border-top: calc(.02 * var(--board-size)) solid transparent;
+	border-left: calc(.02 * var(--board-size)) solid grey;
+	border-bottom: calc(.02 * var(--board-size)) solid transparent;
+	display: flex;
+	margin: auto;
+}
+move-list > sidebar-step-back::before {
+	transform: rotate(180deg);
 }
 move-list > label::before {
 	content: "";
@@ -617,6 +642,6 @@ move-list > label::before {
 	transform: scaleY(1);
 	transition: transform .25s ease-in-out;
 }
-move-list > input[type=checkbox]:checked + label::before {
+move-list > input[type=checkbox]:checked ~ label::before {
 	transform: scaleY(-1);
 }

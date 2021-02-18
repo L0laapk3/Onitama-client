@@ -160,13 +160,24 @@ moveListCheckbox.type = "checkbox";
 moveListCheckbox.id = "moveListCheckbox";
 const moveListLabel = document.createElement("label");
 moveListLabel.htmlFor = "moveListCheckbox";
+const prevMoveButton = document.createElement("sidebar-step-back");
+const nextMoveButton = document.createElement("sidebar-step-forward");
 moveList.appendChild(moveListCheckbox);
+moveList.appendChild(prevMoveButton);
 moveList.appendChild(moveListLabel);
+moveList.appendChild(nextMoveButton);
 moveList.append(moveListScroll);
 moveListContainer.append(moveList);
 container.append(sidebarContainer);
 container.append(boardContainer);
 container.append(moveListContainer);
+
+prevMoveButton.onclick = e => {
+	keyStepPly(-1);
+};
+nextMoveButton.onclick = e => {
+	keyStepPly(1);
+};
 
 moveListScroll.onclick = e => {
 	if (e.target.tagName == "MOVE-LIST-MOVE") {
