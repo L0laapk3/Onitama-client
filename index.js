@@ -298,10 +298,10 @@ window.onkeydown = e => {
 	else if (e.key == "ArrowRight")
 		keyStepPly(1);
 };
-window.onmouseup = e => {
-	if (e.button == 3)
+window.onmousewheel = e => {
+	if (e.deltaY > 0)
 		keyStepPly(-1);
-	else if (e.button == 4)
+	else if (e.deltaY < 0)
 		keyStepPly(1);
 	else return;
 	e.preventDefault();
