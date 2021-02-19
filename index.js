@@ -294,16 +294,16 @@ function keyStepPly(incr) {
 }
 window.onkeydown = e => {
 	if (e.key == "ArrowLeft")
-		keyStepPly(1);
-	else if (e.key == "ArrowRight")
 		keyStepPly(-1);
+	else if (e.key == "ArrowRight")
+		keyStepPly(1);
 };
 window.onmousewheel = e => {
 	if (!moveList.contains(e.target)) {
 		if (e.deltaY > 0)
-			keyStepPly(-1);
-		else if (e.deltaY < 0)
 			keyStepPly(1);
+		else if (e.deltaY < 0)
+			keyStepPly(-1);
 		else
 			return;
 		e.preventDefault();
