@@ -294,9 +294,9 @@ function keyStepPly(incr) {
 }
 window.onkeydown = e => {
 	if (e.key == "ArrowLeft")
-		keyStepPly(-1);
-	else if (e.key == "ArrowRight")
 		keyStepPly(1);
+	else if (e.key == "ArrowRight")
+		keyStepPly(-1);
 };
 window.onmousewheel = e => {
 	if (!moveList.contains(e.target)) {
