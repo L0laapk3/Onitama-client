@@ -172,12 +172,24 @@ container.append(sidebarContainer);
 container.append(boardContainer);
 container.append(moveListContainer);
 
-prevMoveButton.onclick = e => {
-	keyStepPly(-1);
-};
-nextMoveButton.onclick = e => {
-	keyStepPly(1);
-};
+const stepRepeatTimers = {};
+function stepRepeat(dir) {
+	keyStepPly(dir);
+	function setTimer(time) {
+		stepRepeatTimers[dir] = setTimeout(e => {
+			keyStepPly(dir);
+			setTimer(75);
+		}, time);
+	}
+	setTimer(500);
+}
+function stepRepeatStop(dir) {
+	clearTimeout(stepRepeatTimers[dir]);
+}
+prevMoveButton.onmousedown = e => stepRepeat(-1);
+nextMoveButton.onmousedown = e => stepRepeat(1);
+prevMoveButton.onmouseup = e => stepRepeatStop(-1);
+nextMoveButton.onmouseup = e => stepRepeatStop(1);
 
 moveListScroll.onclick = e => {
 	if (e.target.tagName == "MOVE-LIST-MOVE") {
