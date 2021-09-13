@@ -689,6 +689,9 @@ function copyToClipboard(value) {
 		if (toastQueue.length)
 			return;
 
+		if (window.AndroidShareHandler && window.AndroidShareHandler.share)
+			navigator.share = v => window.AndroidShareHandler.share(v.title, v.url);
+			
 		if (/Mobi/i.test(navigator.userAgent) && navigator.share) { // if mobile and has share functionality. Use it
 			navigator.share({
 				title: 'Onitama invite link',
