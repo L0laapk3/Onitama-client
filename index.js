@@ -689,19 +689,26 @@ function copyToClipboard(value) {
 		if (toastQueue.length)
 			return;
 
-		const copyBox = document.getElementById("copyTextBox");
-		copyBox.value = value;
-		copyBox.focus();
-		copyBox.select();
-		let successful = false;
-		try {
-			successful = document.execCommand('copy');
-		} catch (err) {}
-		if (successful) {
-			displayToast("Copied invite link to clipboard");
-		} else {
-			displayToast("Copying failed");
-			console.error("copying failed");
+		if (/Mobi/i.test(navigator.userAgent) && navigator.share) { // if mobile and has share functionality. Use it
+			navigator.share({
+				title: 'Onitama invite link',
+				url: value
+			});
+		} else { // otherwise, copy to clipboard
+			const copyBox = document.getElementById("copyTextBox");
+			copyBox.value = value;
+			copyBox.focus();
+			copyBox.select();
+			let successful = false;
+			try {
+				successful = document.execCommand('copy');
+			} catch (err) {}
+			if (successful) {
+				displayToast("Copied invite link to clipboard");
+			} else {
+				displayToast("Copying failed");
+				console.error("copying failed");
+			}
 		}
 	};
 }
