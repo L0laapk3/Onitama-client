@@ -115,9 +115,9 @@ for (let y = 0; y < 5; y += 4)
 	}
 const startBoard = { pieces: [
 	 0,  1,  2,  3,  4,
-	-1, -1, -1, -1, -1, 
-	-1, -1, -1, -1, -1, 
-	-1, -1, -1, -1, -1, 
+	-1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1,
 	 5,  6,  7,  8,  9,
 ]};
 let moves = [];
@@ -249,7 +249,7 @@ function getBoardAtPly(ply, updateMoveList) {
 }
 
 function selectPly(ply, updateMoveList) {
-	
+
 	getBoardAtPly(ply, updateMoveList);
 	const piecesPositions = new Array(10).fill(-1);
 	for (let i = 0; i < 25; i++)
@@ -280,9 +280,9 @@ function selectPly(ply, updateMoveList) {
 		pieces[i].el.style.setProperty("--x", pieces[i].x);
 		pieces[i].el.style.setProperty("--y", pieces[i].y);
 	}
-	
+
 	gameBoard.el.setAttribute("turn", board.turn);
-	
+
 	if (selectedPlyI == moves.length)
 		gameBoard.el.removeAttribute("history");
 	else
@@ -508,7 +508,7 @@ function setBoard(data) {
 							return;
 						if (piece.removed)
 							return;
-							
+
 						const submitMove = cardChoice => {
 							const card = currentCards[usableCards[cardChoice]];
 							const pos = "edcba"[piece.x] + (piece.y+1) + "edcba"[x] + (y+1);
@@ -615,6 +615,7 @@ ws.onmessage = e => {
 	case "move":
 		break;
 	case "create":
+	case "create_custom":
 		copyToClipboard(data.matchId);
 		ws.send("spectate " + data.matchId);
 		playerIndex = 0;
@@ -691,7 +692,7 @@ function copyToClipboard(value) {
 
 		if (window.AndroidShareHandler && window.AndroidShareHandler.share)
 			navigator.share = v => window.AndroidShareHandler.share(v.title, v.url);
-			
+
 		if (/Mobi/i.test(navigator.userAgent) && navigator.share) { // if mobile and has share functionality. Use it
 			navigator.share({
 				title: 'Onitama invite link',
