@@ -16,7 +16,7 @@ window.onresize = _ => {
 };
 window.onresize();
 
-const ws = new WebSocket(localStorage.ws || "wss://litama.herokuapp.com");
+const ws = new WebSocket(localStorage.ws || "wss://server.lucasholten.com/onitama");
 
 const cards = {};
 for (let card of CARDS.base)
